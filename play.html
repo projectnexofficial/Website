@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Project NEX | Play & Earn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-cyan: #00ffff;
+            --dark-bg: #050a0f;
+            --card-bg: #0d161f;
+            --text-gray: #888888;
+            --accent-glow: rgba(0, 255, 255, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Exo 2', sans-serif; background: var(--dark-bg); color: white; overflow: hidden; height: 100vh; user-select: none; }
+
+        /* Status Bar */
+        .top-stats { display: flex; justify-content: space-between; padding: 15px 20px; background: rgba(0, 0, 0, 0.5); border-bottom: 1px solid var(--accent-glow); align-items: center;}
+        .stat-box { text-align: center; }
+        .stat-label { font-size: 10px; color: var(--text-gray); text-transform: uppercase; letter-spacing: 1px;}
+        .stat-value { font-size: 14px; color: var(--neon-cyan); font-weight: bold; }
+        #music-toggle { background: transparent; border: 1px solid var(--neon-cyan); color: var(--neon-cyan); padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;}
+
+        /* Pages */
+        .page { display: none; padding: 20px; height: calc(100vh - 140px); overflow-y: auto; padding-bottom: 80px; }
+        .page.active { display: block; animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Home Page - Tapping */
+        .balance-container { text-align: center; margin-top: 20px; }
+        .coin-balance { font-size: 48px; font-weight: 900; color: white; text-shadow: 0 0 20px rgba(0, 255, 255, 0.4); }
+        .currency-name { font-size: 18px; color: var(--neon-cyan); }
+        
+        .game-area { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 50vh; margin-top: 20px;}
+        .coin-wrapper { position: relative; width: 260px; height: 260px; display: flex; justify-content: center; align-items: center; }
+        
+        /* The NEX Coin */
+        .main-coin {
+            width: 100%; height: 100%;
+            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiRvRlGr0GcaBzaBWonR-AzaJhYVH6jVHlc_m1qGZhFacv9dKsBKPiI108n9ISnsakcWJLlvUc_dE0_ayfhTy4DKP-m8TmASpaQcvWwo5f_9pdae9fCYLecbXYixsw0ANEOYe_wVXjGj1lfeVqxaah0uFtuhbxuFKec5HHVkmxSYZ7cBASiM7aPettct40/s1024/1000068539.png') no-repeat center center;
+            background-size: contain; border-radius: 50%;
+            box-shadow: 0 0 60px rgba(0, 255, 255, 0.15);
+            cursor: pointer; transition: transform 0.05s;
+        }
+        .main-coin:active { transform: scale(0.92); box-shadow: 0 0 80px rgba(0, 255, 255, 0.3); }
+
+        .tap-effect { position: absolute; color: white; font-weight: 900; font-size: 28px; text-shadow: 0 0 10px var(--neon-cyan); pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 100; }
+        @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-120px) scale(1.5); opacity: 0; } }
+
+        .energy-container { width: 85%; margin-top: 40px; }
+        .energy-text { font-size: 14px; margin-bottom: 8px; font-weight: bold; }
+        .energy-bar-bg { width: 100%; height: 14px; background: #111; border-radius: 10px; border: 1px solid var(--accent-glow); overflow: hidden; }
+        .energy-bar-fill { height: 100%; background: linear-gradient(90deg, #004080, var(--neon-cyan)); transition: width 0.2s; }
+
+        /* Universal Card Styles (Mine, Earn, Boost) */
+        .section-heading { font-size: 20px; color: var(--neon-cyan); margin-bottom: 15px; text-align: center;}
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .list-container { display: flex; flex-direction: column; gap: 15px; }
+        
+        .premium-card { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; transition: 0.3s; position: relative; display: flex; flex-direction: column; justify-content: space-between; }
+        .premium-card:active { transform: scale(0.98); border-color: var(--neon-cyan); }
+        .premium-card.disabled { opacity: 0.4; pointer-events: none; }
+        
+        .card-header { font-size: 13px; font-weight: bold; color: white; margin-bottom: 5px; }
+        .card-sub { font-size: 11px; color: var(--text-gray); margin-bottom: 12px; }
+        .card-sub span { color: #00ff00; }
+        .card-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .price { color: var(--neon-cyan); font-weight: bold; font-size: 13px; }
+        .level { font-size: 10px; background: rgba(0,0,0,0.5); padding: 3px 6px; border-radius: 4px; }
+
+        /* Task Specific */
+        .task-card { display: flex; justify-content: space-between; align-items: center; flex-direction: row; }
+        .task-btn { background: rgba(0, 255, 255, 0.1); color: var(--neon-cyan); padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+        .task-card.completed .task-btn { background: #222; color: #888; }
+
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #020508; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--accent-glow); z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { text-align: center; color: var(--text-gray); text-decoration: none; font-size: 11px; flex: 1; transition: 0.3s; padding: 10px 0; }
+        .nav-item.active { color: var(--neon-cyan); transform: translateY(-3px); }
+        .nav-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop src="https://www.fesliyanstudios.com/play-mp3/387"></audio>
+    <audio id="tapSound" src="https://www.fesliyanstudios.com/play-mp3/6"></audio>
+    <audio id="buySound" src="https://www.fesliyanstudios.com/play-mp3/2908"></audio>
+
+    <div class="top-stats">
+        <div class="stat-box">
+            <p class="stat-label">Rank</p>
+            <p class="stat-value" id="user-rank">Beginner</p>
+        </div>
+        <div class="stat-box">
+            <p class="stat-label">Profit per hour</p>
+            <p class="stat-value">+<span id="pph-display">0</span></p>
+        </div>
+        <button id="music-toggle" onclick="toggleMusic()">🎵 Play Music</button>
+    </div>
+
+    <div id="home-page" class="page active">
+        <div class="balance-container">
+            <p class="coin-balance"><span id="coin-balance">0</span> <span class="currency-name">$NEX</span></p>
+        </div>
+        <div class="game-area">
+            <div class="coin-wrapper">
+                <div class="main-coin" id="tap-coin"></div>
+            </div>
+            <div class="energy-container">
+                <p class="energy-text">⚡ <span id="current-energy">1000</span> / <span id="max-energy">1000</span></p>
+                <div class="energy-bar-bg">
+                    <div class="energy-bar-fill" id="energy-fill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="mine-page" class="page">
+        <h2 class="section-heading">Mining Operations</h2>
+        <div class="grid-container" id="cards-container"></div>
+    </div>
+
+    <div id="earn-page" class="page">
+        <h2 class="section-heading">Social Missions</h2>
+        <div class="list-container" id="tasks-container"></div>
+    </div>
+
+    <div id="boost-page" class="page">
+        <h2 class="section-heading">Upgrades</h2>
+        <div class="list-container" id="boost-container"></div>
+    </div>
+
+    <div id="friends-page" class="page">
+        <h2 class="section-heading">Referral Center</h2>
+        <div class="premium-card" style="text-align:center; display:block;">
+            <p style="font-size:12px; color:var(--text-gray); margin-bottom:10px;">Share your link and earn 5,000 $NEX per invite!</p>
+            <div style="background:#000; padding:10px; border-radius:8px; font-size:10px; word-break:break-all; border:1px solid #333; margin-bottom:15px;">
+                https://t.me/ProjectNexOfficial_bot?start=ref_12345
+            </div>
+            <button style="background:var(--neon-cyan); color:#000; padding:10px 20px; border:none; border-radius:5px; font-weight:bold; width:100%;">Copy Link</button>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a class="nav-item active" onclick="nav('home-page', this)"><span class="nav-icon">🏠</span>Home</a>
+        <a class="nav-item" onclick="nav('mine-page', this)"><span class="nav-icon">⛏️</span>Mine</a>
+        <a class="nav-item" onclick="nav('earn-page', this)"><span class="nav-icon">💰</span>Earn</a>
+        <a class="nav-item" onclick="nav('boost-page', this)"><span class="nav-icon">🚀</span>Boost</a>
+        <a class="nav-item" onclick="nav('friends-page', this)"><span class="nav-icon">👥</span>Friends</a>
+    </nav>
+
+    <script>
+        // --- GAME LOGIC & STATE ---
+        let state = {
+            balance: 0, pph: 0, energy: 1000, maxEnergy: 1000, tapPower: 1, totalEarned: 0,
+            boosts: {
+                multitap: { level: 1, baseCost: 500 },
+                energyLimit: { level: 1, baseCost: 500 },
+                recharge: { level: 1, baseCost: 1000 }
+            },
+            cards: [
+                { id: 1, name: "Basic Cloud Node", cost: 100, pph: 5, lvl: 0 },
+                { id: 2, name: "Telegram Shill Army", cost: 500, pph: 25, lvl: 0 },
+                { id: 3, name: "Smart Contract Audit", cost: 1500, pph: 80, lvl: 0 },
+                { id: 4, name: "AI Trading Bot", cost: 5000, pph: 250, lvl: 0 },
+                { id: 5, name: "Web3 Partnership", cost: 12000, pph: 650, lvl: 0 },
+                { id: 6, name: "Quantum Server", cost: 50000, pph: 3000, lvl: 0 }
+            ],
+            tasks: [
+                { id: 'yt', title: "Subscribe YouTube", reward: 10000, done: false, link: "https://youtube.com/@Project-Nex-Official" },
+                { id: 'tg', title: "Join Telegram", reward: 5000, done: false, link: "https://t.me/ProjectNexOfficial" }
+            ]
+        };
+
+        const ranks = [{n:"Beginner", t:0}, {n:"Amateur", t:50000}, {n:"Pro", t:250000}, {n:"Legend", t:1000000}];
+
+        // Audio Elements
+        const bgMusic = document.getElementById('bgMusic');
+        const tapSound = document.getElementById('tapSound');
+        const buySound = document.getElementById('buySound');
+        bgMusic.volume = 0.3;
+
+        function toggleMusic() {
+            if (bgMusic.paused) { bgMusic.play(); document.getElementById('music-toggle').innerText = "🔊 Music On"; }
+            else { bgMusic.pause(); document.getElementById('music-toggle').innerText = "🎵 Music Off"; }
+        }
+
+        // --- CORE FUNCTIONS ---
+        function init() {
+            const saved = localStorage.getItem('nexState');
+            if (saved) state = JSON.parse(saved);
+            renderAll();
+            setInterval(gameTick, 1000);
+        }
+
+        function save() { localStorage.setItem('nexState', JSON.stringify(state)); }
+
+        function nav(pageId, el) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            el.classList.add('active');
+        }
+
+        function getRank() {
+            let r = ranks[0].n;
+            for (let i = ranks.length-1; i >= 0; i--) {
+                if(state.totalEarned >= ranks[i].t) return ranks[i].n;
+            }
+            return r;
+        }
+
+        function updateUI() {
+            document.getElementById('coin-balance').innerText = Math.floor(state.balance).toLocaleString();
+            document.getElementById('pph-display').innerText = state.pph.toLocaleString();
+            document.getElementById('user-rank').innerText = getRank();
+            document.getElementById('current-energy').innerText = Math.floor(state.energy);
+            document.getElementById('max-energy').innerText = state.maxEnergy;
+            document.getElementById('energy-fill').style.width = `${(state.energy / state.maxEnergy) * 100}%`;
+        }
+
+        // --- TAPPING ---
+        document.getElementById('tap-coin').addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevents double firing on mobile
+            Array.from(e.changedTouches).forEach(touch => handleTap(touch.clientX, touch.clientY));
+        });
+        document.getElementById('tap-coin').addEventListener('mousedown', (e) => {
+            handleTap(e.clientX, e.clientY);
+        });
+
+        function handleTap(x, y) {
+            if (state.energy >= state.tapPower) {
+                state.balance += state.tapPower;
+                state.totalEarned += state.tapPower;
+                state.energy -= state.tapPower;
+                
+                tapSound.currentTime = 0; tapSound.play();
+                
+                // Floating text
+                const float = document.createElement('div');
+                float.className = 'tap-effect';
+                float.innerText = `+${state.tapPower}`;
+                float.style.left = `${x - 20}px`; float.style.top = `${y - 40}px`;
+                document.body.appendChild(float);
+                setTimeout(() => float.remove(), 800);
+                
+                updateUI(); save(); renderAll(true);
+            }
+        }
+
+        // --- RENDERING ---
+        function renderAll(onlyDynamic = false) {
+            updateUI();
+            
+            // Render Cards
+            const cCont = document.getElementById('cards-container');
+            if(!onlyDynamic) cCont.innerHTML = '';
+            state.cards.forEach((c, i) => {
+                const cost = Math.floor(c.cost * Math.pow(1.5, c.lvl));
+                const nextPph = Math.floor(c.pph * (c.lvl + 1));
+                if(onlyDynamic) {
+                    const el = document.getElementById(`card-${i}`);
+                    if(el) el.className = `premium-card ${state.balance < cost ? 'disabled' : ''}`;
+                    return;
+                }
+                const html = `
+                    <div id="card-${i}" class="premium-card ${state.balance < cost ? 'disabled' : ''}" onclick="buyCard(${i})">
+                        <div>
+                            <div class="card-header">${c.name}</div>
+                            <div class="card-sub">Profit/hr: <span>+${nextPph}</span></div>
+                        </div>
+                        <div class="card-bottom">
+                            <span class="price">💰 ${cost.toLocaleString()}</span>
+                            <span class="level">lvl ${c.lvl}</span>
+                        </div>
+                    </div>`;
+                cCont.innerHTML += html;
+            });
+
+            // Render Tasks
+            if(!onlyDynamic) {
+                const tCont = document.getElementById('tasks-container');
+                tCont.innerHTML = '';
+                state.tasks.forEach((t, i) => {
+                    tCont.innerHTML += `
+                        <div class="premium-card task-card ${t.done ? 'completed' : ''}" onclick="doTask(${i})">
+                            <div>
+                                <div class="card-header">${t.title}</div>
+                                <div class="card-sub" style="margin:0;"><span>+${t.reward.toLocaleString()} $NEX</span></div>
+                            </div>
+                            <span class="task-btn">${t.done ? 'Done' : 'Start'}</span>
+                        </div>`;
+                });
+            }
+
+            // Render Boosts
+            const bCont = document.getElementById('boost-container');
+            if(!onlyDynamic) bCont.innerHTML = '';
+            const boostsData = [
+                {id:'multitap', n:'Multitap', d:`+${state.boosts.multitap.level} Coins per tap`},
+                {id:'energyLimit', n:'Energy Limit', d:'+500 Max Energy'},
+                {id:'recharge', n:'Recharge Speed', d:'Faster energy refill'}
+            ];
+            boostsData.forEach((b, i) => {
+                const data = state.boosts[b.id];
+                const cost = Math.floor(data.baseCost * Math.pow(2, data.level - 1));
+                if(onlyDynamic) {
+                    const el = document.getElementById(`boost-${i}`);
+                    if(el) el.className = `premium-card task-card ${state.balance < cost ? 'disabled' : ''}`;
+                    return;
+                }
+                bCont.innerHTML += `
+                    <div id="boost-${i}" class="premium-card task-card ${state.balance < cost ? 'disabled' : ''}" onclick="buyBoost('${b.id}')">
+                        <div>
+                            <div class="card-header">${b.n}</div>
+                            <div class="card-sub" style="margin:0; color:var(--text-gray)">${b.d}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <span class="price">💰 ${cost.toLocaleString()}</span><br>
+                            <span class="level">lvl ${data.level}</span>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // --- ACTIONS ---
+        function buyCard(index) {
+            const c = state.cards[index];
+            const cost = Math.floor(c.cost * Math.pow(1.5, c.lvl));
+            if(state.balance >= cost) {
+                state.balance -= cost; state.pph += c.pph; c.lvl++;
+                buySound.currentTime=0; buySound.play();
+                save(); renderAll();
+            }
+        }
+
+        function buyBoost(id) {
+            const b = state.boosts[id];
+            const cost = Math.floor(b.baseCost * Math.pow(2, b.level - 1));
+            if(state.balance >= cost) {
+                state.balance -= cost; b.level++;
+                if(id === 'multitap') state.tapPower++;
+                if(id === 'energyLimit') state.maxEnergy += 500;
+                buySound.currentTime=0; buySound.play();
+                save(); renderAll();
+            }
+        }
+
+        function doTask(index) {
+            const t = state.tasks[index];
+            if(!t.done) {
+                window.open(t.link, '_blank');
+                state.balance += t.reward; t.done = true;
+                buySound.currentTime=0; buySound.play();
+                save(); renderAll();
+            }
+        }
+
+        // --- GAME TICK (Every Second) ---
+        function gameTick() {
+            // Energy Refill
+            const refill = state.boosts.recharge.level;
+            if (state.energy < state.maxEnergy) {
+                state.energy = Math.min(state.maxEnergy, state.energy + refill);
+            }
+            // Passive Income (PPH)
+            if (state.pph > 0) {
+                state.balance += (state.pph / 3600); // per second
+                state.totalEarned += (state.pph / 3600);
+                save();
+            }
+            updateUI();
+            renderAll(true); // update buttons affordability without full redraw
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
+
