@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROJECT NEX | Official Web3 Empire</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;600;800&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg-color: #050a0f;
+        --card-bg: #0d161f;
+        --text-color: #e0e0e0;
+        --primary-neon: #00ffff; /* Neon Cyan */
+        --secondary-neon: #0080ff; /* Deep Blue */
+        --accent-glow: rgba(0, 255, 255, 0.3);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        font-family: 'Roboto', sans-serif;
+        line-height: 1.6;
+        overflow-x: hidden;
+    }
+
+    .nex-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+    /* --- Navigation --- */
+    header {
+        background: rgba(5, 10, 15, 0.95);
+        backdrop-filter: blur(10px);
+        padding: 15px 0;
+        position: fixed;
+        width: 100%;
+        top: 0; z-index: 1000;
+        border-bottom: 1px solid var(--accent-glow);
+    }
+
+    .nav-flex { display: flex; justify-content: space-between; align-items: center; }
+    .brand { display: flex; align-items: center; text-decoration: none; }
+    .logo-img { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--primary-neon); margin-right: 12px; }
+    .brand-name { font-family: 'Exo 2', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--primary-neon); letter-spacing: 1px; }
+
+    nav ul { display: flex; list-style: none; }
+    nav ul li { margin-left: 25px; }
+    nav ul li a { text-decoration: none; color: white; font-size: 0.9rem; font-weight: 600; transition: 0.3s; }
+    nav ul li a:hover { color: var(--primary-neon); text-shadow: 0 0 10px var(--primary-neon); }
+
+    /* --- Hero Section --- */
+    .hero {
+        padding: 180px 0 100px;
+        text-align: center;
+        background: radial-gradient(circle at center, #0a1f2f 0%, var(--bg-color) 70%);
+    }
+
+    .hero h1 {
+        font-family: 'Exo 2', sans-serif;
+        font-size: clamp(2.5rem, 8vw, 4.5rem);
+        font-weight: 800;
+        color: white;
+        margin-bottom: 10px;
+        letter-spacing: 2px;
+    }
+
+    .hero p { color: var(--secondary-neon); font-size: 1.2rem; margin-bottom: 35px; font-weight: 300; }
+
+    .btn-launch {
+        display: inline-block;
+        padding: 16px 45px;
+        background: var(--primary-neon);
+        color: #000;
+        text-decoration: none;
+        font-weight: 800;
+        border-radius: 50px;
+        text-transform: uppercase;
+        box-shadow: 0 0 20px var(--accent-glow);
+        transition: 0.3s;
+    }
+
+    .btn-launch:hover { transform: scale(1.05); box-shadow: 0 0 35px var(--primary-neon); }
+
+    /* --- Content Sections --- */
+    section { padding: 80px 0; }
+    .section-title {
+        font-family: 'Exo 2', sans-serif;
+        font-size: 2.2rem;
+        text-align: center;
+        margin-bottom: 50px;
+        color: var(--primary-neon);
+    }
+
+    /* --- Image Graphics Styling (Premium Look) --- */
+    .graphic-card {
+        background: var(--card-bg);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 40px;
+        transition: 0.4s;
+        text-align: center;
+    }
+    .graphic-card:hover { border-color: var(--primary-neon); box-shadow: 0 10px 30px rgba(0, 255, 255, 0.1); }
+    .graphic-card img {
+        width: 100%;
+        max-width: 800px;
+        border-radius: 10px;
+        filter: brightness(0.9) contrast(1.1);
+        border: 1px solid rgba(0, 255, 255, 0.2);
+    }
+
+    /* --- Grid Layouts --- */
+    .roadmap-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+    }
+
+    .phase-card {
+        background: var(--card-bg);
+        padding: 30px;
+        border-radius: 12px;
+        border-left: 4px solid var(--secondary-neon);
+    }
+
+    .phase-card h3 { color: var(--primary-neon); margin-bottom: 15px; font-family: 'Exo 2'; }
+
+    /* --- Footer & Social --- */
+    footer {
+        background: #03070a;
+        padding: 60px 0 30px;
+        text-align: center;
+        border-top: 1px solid var(--accent-glow);
+    }
+
+    .social-links { display: flex; justify-content: center; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
+    .social-links a {
+        background: var(--card-bg);
+        color: white;
+        padding: 12px 25px;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        border: 1px solid rgba(255,255,255,0.1);
+        transition: 0.3s;
+    }
+    .social-links a:hover { background: var(--primary-neon); color: #000; border-color: var(--primary-neon); }
+
+    /* --- Mobile Responsive --- */
+    @media (max-width: 768px) {
+        .nav-flex { flex-direction: column; gap: 15px; }
+        nav ul li { margin: 0 10px; }
+        .hero { padding-top: 140px; }
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <div class="nex-container nav-flex">
+        <a href="#" class="brand">
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhirq6TWUudXfJ9F4MvfJJ5OTdhJ1iVMGdpoVrnGg_jgyKDecV3jlvj6rLHhRiydggSEYY7060HRM3-9i5y3ItFJzvc_Do4GIAaNRsBOdD7IaufWtoxQN8UfQYimyneuN0ga3-e6bTxddrQhneOs0v9dAOFc2TJxnAjLx47dGoM94kD7bdcbUd-jxdLN8s/s320/1000064595.png" class="logo-img" alt="NEX Logo">
+            <span class="brand-name">PROJECT NEX</span>
+        </a>
+        <nav>
+            <ul>
+                <li><a href="#about">About</a></li>
+                <li><a href="#utility">Utility</a></li>
+                <li><a href="#roadmap">Roadmap</a></li>
+                <li><a href="#contact">Community</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<main>
+    <section class="hero">
+        <div class="nex-container">
+            <h1>PROJECT NEX</h1>
+            <p>The Next-Gen Web3 Gaming Empire.</p>
+            <a href="https://play.project-nex.github.io/" class="btn-launch">Launch Game App</a>
+        </div>
+    </section>
+
+    <section id="about" class="nex-container">
+        <h2 class="section-title">The Future of Gaming</h2>
+        <div class="graphic-card">
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiuGazSje3yanbFlkME6nNI-YaMFc_IuhmSF3T0QBt7JwV2QHdyRYezVAzg9ddt57wl3BCufT_F1vvrmaEAIuBQEuTZJ9i6JkrWPoyWYiVmTkX5bK2fp3X1NRJlHS3Q0bjwqlpPq78-f4rVN9Fi5Cas7tTtUKpa-3mr0V2xto4by4K6rPZqNaRohf1gRGc/s1376/1000068547.png" alt="NEX Branding">
+            <p style="margin-top: 20px;">Project Nex is a revolutionary "Tap-to-Earn" ecosystem designed for the modern Web3 era.</p>
+        </div>
+    </section>
+
+    <section id="utility" class="nex-container">
+        <h2 class="section-title">$NEX Token Utility</h2>
+        <div class="graphic-card">
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhC6p0hGGNGNEjpm3QRwU229-YUSw1hkX_Gq48Po5SfAV87AtGI5lHT0b1zTkR9nYOMNrnOtBtfF6pQ_kQ1IXI1-LEPsHKExtf5Q40Kb1B0xuQW9BqBHyaYnqbHDchqYl_Ugj3XW8ViQacmXHpObf6uFn45179bCoiuqGj9I-YBYcoUXgSB_gbhIR2oeVs/s1376/1000068553.png" alt="NEX Utility">
+        </div>
+        <div class="graphic-card">
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiaM8hAIFSRvX8OCtzOEH-xTMElFPfY77E7jkTfzQc06ClKqTD0E63KgswcqlzizqF-siYTc7PanRrJUzBFCfEOx4xUpcPdM1p74S0aOfvzJfQXdfYo10n_-Iybtak0Ce1Hp2UC3YnTv8c-FMxrhuTv1lJzgbuywPKSFEkYebMhVeCYx1e0OJFdj6CcAcA/s1376/1000068552.png" alt="Official Links">
+        </div>
+    </section>
+
+    <section id="roadmap" class="nex-container">
+        <h2 class="section-title">Strategic Roadmap</h2>
+        <div class="roadmap-grid">
+            <div class="phase-card">
+                <h3>Phase 1: Foundation</h3>
+                <p>Team building, Global Brand Launch, and Telegram Community expansion.</p>
+            </div>
+            <div class="phase-card">
+                <h3>Phase 2: Alpha Testing</h3>
+                <p>Mini-App development, $NEX Mining launch, and Security audits.</p>
+            </div>
+            <div class="phase-card">
+                <h3>Phase 3: Ecosystem</h3>
+                <p>Public Listing, Global Partnerships, and Ecosystem Scaling.</p>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer id="contact">
+    <div class="nex-container">
+        <h2 class="section-title">Join Our Community</h2>
+        <div class="social-links">
+            <a href="https://t.me/ProjectNexOfficial" target="_blank">Telegram</a>
+            <a href="https://www.youtube.com/@Project-Nex-Official" target="_blank">YouTube</a>
+            <a href="https://www.instagram.com/projectnexofficial?igsh=MWY1cmVmNDVzcXJveQ==" target="_blank">Instagram</a>
+        </div>
+        <p style="margin-top: 30px; opacity: 0.5; font-size: 0.8rem;">&copy; 2026 PROJECT NEX. All Rights Reserved.</p>
+    </div>
+</footer>
+
+</body>
+</html>
+
