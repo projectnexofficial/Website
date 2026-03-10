@@ -276,8 +276,7 @@
             const b = window.state.boosts[id]; const cost = Math.floor(b.baseCost * Math.pow(2, b.level - 1));
             if(window.state.balance >= cost) { window.state.balance -= cost; b.level++; if(id === 'multitap') window.state.tapPower++; if(id === 'energyLimit') window.state.maxEnergy += 500; buySound.currentTime=0; buySound.play(); saveToCloud(); renderAll(); }
         }
-        
-        // 🚀 SECURE TASK VERIFICATION LOGIC 🚀
+                // 🚀 SECURE TASK VERIFICATION LOGIC 🚀
         window.doTask = async function(index) {
             const t = window.state.tasks[index];
             if(t.done) return;
@@ -296,23 +295,33 @@
                 btn.style.opacity = "0.5";
 
                 try {
-                    // Making request to YOUR Google Apps Script API
+                    // API Call (With special bypass parameters)
                     const checkUrl = `${API_URL}?userId=${playerId}&channel=${CHANNEL_USERNAME}`;
-                    const res = await fetch(checkUrl);
-                    const data = await res.json();
-
-                    if (data.success && data.joined) {
-                        window.state.balance += t.reward; t.done = true;
-                        buySound.currentTime=0; buySound.play();
-                        saveToCloud(); renderAll();
-                        alert("Verification Successful! Reward added. 🚀");
-                    } else {
+                    const res = await fetch(checkUrl, { 
+                        method: 'GET',
+                        redirect: 'follow' 
+                    });
+                    
+                    const text = await res.text();
+                    
+                    try {
+                        const data = JSON.parse(text);
+                        if (data.success && data.joined) {
+                            window.state.balance += t.reward; t.done = true;
+                            buySound.currentTime=0; buySound.play();
+                            saveToCloud(); renderAll();
+                            alert("Verification Successful! Reward added. 🚀");
+                        } else {
+                            btn.innerText = "Start"; btn.style.opacity = "1";
+                            alert("Verification Failed: You haven't joined yet! ❌\nReason: " + (data.error || "Not a member"));
+                        }
+                    } catch (parseErr) {
                         btn.innerText = "Start"; btn.style.opacity = "1";
-                        alert("Verification Failed: You haven't joined the channel yet! ❌");
+                        alert("API Error: Google is blocking access. API URL check karein!");
                     }
                 } catch (e) {
                     btn.innerText = "Start"; btn.style.opacity = "1";
-                    alert("Server checking error. Try again later.");
+                    alert("Network Error: Telegram Browser is blocking the check.");
                 }
 
             } else if (t.id === 'yt') {
@@ -326,19 +335,6 @@
                     buySound.currentTime=0; buySound.play();
                     saveToCloud(); renderAll();
                     alert("YouTube Task Complete! 📺");
-                }, 10000); // 10 seconds wait
+                }, 10000); 
             }
         }
-
-        function gameTick() {
-            const refill = window.state.boosts.recharge.level;
-            if (window.state.energy < window.state.maxEnergy) { window.state.energy = Math.min(window.state.maxEnergy, window.state.energy + refill); }
-            if (window.state.pph > 0) { window.state.balance += (window.state.pph / 3600); window.state.totalEarned += (window.state.pph / 3600); }
-            updateUI(); renderAll(true); queueSave();
-        }
-
-        window.onload = initCloud;
-    </script>
-</body>
-</html>
-
