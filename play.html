@@ -24,32 +24,18 @@
         .coin-balance { font-size: 48px; font-weight: 900; color: white; text-shadow: 0 0 20px rgba(0, 255, 255, 0.4); }
         .currency-name { font-size: 18px; color: var(--neon-cyan); }
         
-        /* --- UPDATED: COIN & BACKGROUND OVERLAP LOGIC --- */
+        /* COIN & BACKGROUND OVERLAP */
         .game-area { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 45vh; margin-top: 20px;}
-        
-        /* Image 2: The Background Base */
         .coin-wrapper { 
-            position: relative; 
-            width: 340px; 
-            height: 340px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
+            position: relative; width: 340px; height: 340px; display: flex; justify-content: center; align-items: center; 
             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjdQ7_PUSk4I3ZLs2E1SAfBz5KVQpsuM_czD6_keQui1lhgig7-luZLi4CeCd1neWxLM8xMs3GXtANGX45S3t_40wgfSJ805kpgFcrrNBGhyphenhyphenOjab_5pXbdnCuwTlEMd47rQDiOR2rwnWk3cF1uDZOokZOiLLFGvCE0DxRA23uMRtuLxmzsRNoaCmijzvho/s1376/1000068547.png') no-repeat center center;
             background-size: contain;
         }
-        
-        /* Image 1: The Clickable NEX Coin in the center */
         .main-coin { 
-            width: 210px; 
-            height: 210px; 
+            width: 210px; height: 210px; 
             background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgleg2PGdSWOyTz8jmWPsJOShGD9hKIwJwp9yWM-2c3DY25FORtVUFZnvo_YON2RWkw2zRw5tItEAEDxLwDBZUtJWef1GgyNeenalHXXeNEXIpkuUR92GHgiGwGZyxbtp8h_T_0mGK88cNH8AsnVp_qxiE7RwAVb_oS4A7dtIXqMSb_cIX_16SB-lqJCng/s1462/1000068539.png') no-repeat center center; 
-            background-size: contain; 
-            border-radius: 50%; 
-            box-shadow: 0 0 50px rgba(0, 255, 255, 0.2); 
-            cursor: pointer; 
-            transition: transform 0.05s; 
-            z-index: 10; 
+            background-size: contain; border-radius: 50%; box-shadow: 0 0 50px rgba(0, 255, 255, 0.2); 
+            cursor: pointer; transition: transform 0.05s; z-index: 10; 
         }
         .main-coin:active { transform: scale(0.92); box-shadow: 0 0 80px rgba(0, 255, 255, 0.4); }
 
@@ -72,8 +58,8 @@
         .price { color: var(--neon-cyan); font-weight: bold; font-size: 13px; }
         .level { font-size: 10px; background: rgba(0,0,0,0.5); padding: 3px 6px; border-radius: 4px; }
         .task-card { display: flex; justify-content: space-between; align-items: center; flex-direction: row; }
-        .task-btn { background: rgba(0, 255, 255, 0.1); color: var(--neon-cyan); padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; }
-        .task-card.completed .task-btn { background: #222; color: #888; }
+        .task-btn { background: rgba(0, 255, 255, 0.1); color: var(--neon-cyan); padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .task-card.completed .task-btn { background: #222; color: #888; pointer-events: none; }
         .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #020508; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--accent-glow); z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
         .nav-item { text-align: center; color: var(--text-gray); text-decoration: none; font-size: 11px; flex: 1; transition: 0.3s; padding: 10px 0; }
         .nav-item.active { color: var(--neon-cyan); transform: translateY(-3px); }
@@ -136,10 +122,14 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // --- 🤖 TELEGRAM INITIALIZATION ---
+        // --- 🤖 TELEGRAM & SERVER API ---
         const tg = window.Telegram.WebApp;
         tg.expand(); 
         tg.ready();
+
+        // 🚨 TUMHARA NEW SECURE API URL YAHAN HAI 🚨
+        const API_URL = "https://script.google.com/macros/s/AKfycbym3xIMSNcGeHDwxFz13BA_XS0tP9E0eYYWkv0aR7vAsE2KtBvcq51o3CKnIjyjip32/exec";
+        const CHANNEL_USERNAME = "@ProjectNexOfficial";
 
         let tgUser = tg.initDataUnsafe?.user;
         let playerId = "";
@@ -257,14 +247,16 @@
                     <div><div class="card-header">${c.name}</div><div class="card-sub">Profit/hr: <span>+${nextPph}</span></div></div>
                     <div class="card-bottom"><span class="price">💰 ${cost.toLocaleString()}</span><span class="level">lvl ${c.lvl}</span></div></div>`;
             });
+            
             if(!onlyDynamic) {
                 const tCont = document.getElementById('tasks-container'); tCont.innerHTML = '';
                 window.state.tasks.forEach((t, i) => {
                     tCont.innerHTML += `<div class="premium-card task-card ${t.done ? 'completed' : ''}" onclick="doTask(${i})">
                         <div><div class="card-header">${t.title}</div><div class="card-sub" style="margin:0;"><span>+${t.reward.toLocaleString()} $NEX</span></div></div>
-                        <span class="task-btn">${t.done ? 'Done' : 'Start'}</span></div>`;
+                        <span class="task-btn" id="task-btn-${i}">${t.done ? 'Done' : 'Start'}</span></div>`;
                 });
             }
+            
             const bCont = document.getElementById('boost-container'); if(!onlyDynamic) bCont.innerHTML = '';
             const boostsData = [ {id:'multitap', n:'Multitap', d:`+${window.state.boosts.multitap.level} Coins`}, {id:'energyLimit', n:'Energy Limit', d:'+500 Max Energy'}, {id:'recharge', n:'Recharge Speed', d:'Faster refill'} ];
             boostsData.forEach((b, i) => {
@@ -284,9 +276,58 @@
             const b = window.state.boosts[id]; const cost = Math.floor(b.baseCost * Math.pow(2, b.level - 1));
             if(window.state.balance >= cost) { window.state.balance -= cost; b.level++; if(id === 'multitap') window.state.tapPower++; if(id === 'energyLimit') window.state.maxEnergy += 500; buySound.currentTime=0; buySound.play(); saveToCloud(); renderAll(); }
         }
-        window.doTask = function(index) {
+        
+        // 🚀 SECURE TASK VERIFICATION LOGIC 🚀
+        window.doTask = async function(index) {
             const t = window.state.tasks[index];
-            if(!t.done) { window.open(t.link, '_blank'); window.state.balance += t.reward; t.done = true; buySound.currentTime=0; buySound.play(); saveToCloud(); renderAll(); }
+            if(t.done) return;
+
+            const btn = document.getElementById(`task-btn-${index}`);
+            
+            if (t.id === 'tg') {
+                window.open(t.link, '_blank'); // Open Channel Link
+                
+                if (!tgUser) {
+                    alert("Real verification only works inside the Telegram app!");
+                    return;
+                }
+
+                btn.innerText = "Checking...";
+                btn.style.opacity = "0.5";
+
+                try {
+                    // Making request to YOUR Google Apps Script API
+                    const checkUrl = `${API_URL}?userId=${playerId}&channel=${CHANNEL_USERNAME}`;
+                    const res = await fetch(checkUrl);
+                    const data = await res.json();
+
+                    if (data.success && data.joined) {
+                        window.state.balance += t.reward; t.done = true;
+                        buySound.currentTime=0; buySound.play();
+                        saveToCloud(); renderAll();
+                        alert("Verification Successful! Reward added. 🚀");
+                    } else {
+                        btn.innerText = "Start"; btn.style.opacity = "1";
+                        alert("Verification Failed: You haven't joined the channel yet! ❌");
+                    }
+                } catch (e) {
+                    btn.innerText = "Start"; btn.style.opacity = "1";
+                    alert("Server checking error. Try again later.");
+                }
+
+            } else if (t.id === 'yt') {
+                // YOUTUBE SMART TIMER
+                window.open(t.link, '_blank');
+                btn.innerText = "Wait 10s...";
+                btn.style.pointerEvents = "none";
+                
+                setTimeout(() => {
+                    window.state.balance += t.reward; t.done = true;
+                    buySound.currentTime=0; buySound.play();
+                    saveToCloud(); renderAll();
+                    alert("YouTube Task Complete! 📺");
+                }, 10000); // 10 seconds wait
+            }
         }
 
         function gameTick() {
@@ -300,3 +341,4 @@
     </script>
 </body>
 </html>
+
