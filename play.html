@@ -39,8 +39,10 @@
         }
         .main-coin:active { transform: scale(0.92); box-shadow: 0 0 80px rgba(0, 255, 255, 0.4); }
 
+        /* ✨ DYNAMIC FLOATING TEXT ✨ */
         .tap-effect { position: absolute; color: white; font-weight: 900; font-size: 28px; text-shadow: 0 0 10px var(--neon-cyan); pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 100; }
-        @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-120px) scale(1.5); opacity: 0; } }
+        @keyframes floatUp { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), -120px) scale(1.5); opacity: 0; } }
+        
         .energy-container { width: 85%; margin-top: 40px; }
         .energy-text { font-size: 14px; margin-bottom: 8px; font-weight: bold; }
         .energy-bar-bg { width: 100%; height: 14px; background: #111; border-radius: 10px; border: 1px solid var(--accent-glow); overflow: hidden; }
@@ -58,7 +60,7 @@
         .price { color: var(--neon-cyan); font-weight: bold; font-size: 13px; }
         .level { font-size: 10px; background: rgba(0,0,0,0.5); padding: 3px 6px; border-radius: 4px; }
         .task-card { display: flex; justify-content: space-between; align-items: center; flex-direction: row; }
-        .task-btn { background: rgba(0, 255, 255, 0.1); color: var(--neon-cyan); padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .task-btn { background: rgba(0, 255, 255, 0.1); color: var(--neon-cyan); padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; text-align: center; min-width: 65px;}
         .task-card.completed .task-btn { background: #222; color: #888; pointer-events: none; }
         .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #020508; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--accent-glow); z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
         .nav-item { text-align: center; color: var(--text-gray); text-decoration: none; font-size: 11px; flex: 1; transition: 0.3s; padding: 10px 0; }
@@ -67,6 +69,13 @@
         #sync-status { position: absolute; top: 15px; right: 20px; font-size: 10px; color: var(--text-gray); }
         .syncing { color: var(--neon-cyan) !important; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        
+        /* Modal Popup for Offline Earnings */
+        #offline-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
+        .modal-content { background: var(--card-bg); border: 1px solid var(--neon-cyan); padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 0 30px rgba(0,255,255,0.2); width: 80%; }
+        .modal-title { font-size: 20px; color: white; margin-bottom: 10px; }
+        .modal-coins { font-size: 32px; font-weight: 900; color: var(--neon-cyan); margin-bottom: 20px; text-shadow: 0 0 10px rgba(0,255,255,0.5); }
+        .modal-btn { background: var(--neon-cyan); color: #000; border: none; padding: 10px 25px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; }
     </style>
 </head>
 <body>
@@ -117,6 +126,14 @@
         <a class="nav-item" onclick="nav('boost-page', this)"><span class="nav-icon">🚀</span>Boost</a>
         <a class="nav-item" onclick="nav('friends-page', this)"><span class="nav-icon">👥</span>Friends</a>
     </nav>
+    
+    <div id="offline-modal">
+        <div class="modal-content">
+            <p class="modal-title">Welcome back, CEO! 🚀<br><span style="font-size:12px;color:var(--text-gray);">Your offline miners collected:</span></p>
+            <p class="modal-coins" id="offline-coins">0</p>
+            <button class="modal-btn" onclick="document.getElementById('offline-modal').style.display='none'">Claim</button>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
@@ -161,6 +178,7 @@
         window.state = {
             tgName: playerName, 
             balance: 0, pph: 0, energy: 1000, maxEnergy: 1000, tapPower: 1, totalEarned: 0,
+            lastSync: Date.now(), // 💸 Added for offline mining
             boosts: { multitap: { level: 1, baseCost: 500 }, energyLimit: { level: 1, baseCost: 500 }, recharge: { level: 1, baseCost: 1000 } },
             cards: [
                 { id: 1, name: "Basic Cloud Node", cost: 100, pph: 5, lvl: 0 }, { id: 2, name: "Telegram Shill Army", cost: 500, pph: 25, lvl: 0 },
@@ -183,16 +201,38 @@
             try {
                 const docSnap = await getDoc(doc(db, "players", playerId));
                 if (docSnap.exists()) { 
-                    window.state = docSnap.data(); 
+                    const data = docSnap.data();
+                    window.state = { ...window.state, ...data }; // Merge new features with old save
                     window.state.tgName = playerName; 
+                    
+                    // 💸 OFFLINE MINING LOGIC 💸
+                    if (window.state.lastSync && window.state.pph > 0) {
+                        const diffSeconds = (Date.now() - window.state.lastSync) / 1000;
+                        const offlineSeconds = Math.min(diffSeconds, 10800); // Max 3 hours offline mining
+                        
+                        if (offlineSeconds > 60) { // Show popup only if away for > 1 minute
+                            const earned = (window.state.pph / 3600) * offlineSeconds;
+                            window.state.balance += earned;
+                            window.state.totalEarned += earned;
+                            
+                            document.getElementById('offline-coins').innerText = `+${Math.floor(earned).toLocaleString()}`;
+                            document.getElementById('offline-modal').style.display = 'flex';
+                            buySound.play();
+                        }
+                        
+                        // Refill energy while offline
+                        const refill = window.state.boosts.recharge.level * offlineSeconds;
+                        window.state.energy = Math.min(window.state.maxEnergy, window.state.energy + refill);
+                    }
                 } 
-                else { saveToCloud(); }
+                saveToCloud();
             } catch(e) { console.error("Cloud Error:", e); }
             renderAll(); setInterval(gameTick, 1000);
         }
 
         async function saveToCloud() {
             syncStatus.innerText = "☁️ Syncing..."; syncStatus.classList.add('syncing');
+            window.state.lastSync = Date.now(); // Update time before saving
             try {
                 await setDoc(doc(db, "players", playerId), window.state);
                 syncStatus.innerText = "☁️ Saved"; syncStatus.classList.remove('syncing');
@@ -228,10 +268,16 @@
         function handleTap(x, y) {
             if (window.state.energy >= window.state.tapPower) {
                 window.state.balance += window.state.tapPower; window.state.totalEarned += window.state.tapPower; window.state.energy -= window.state.tapPower;
+                
                 tapSound.currentTime = 0; tapSound.play();
+                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light'); // 📳 VIBRATION EFFECT
+                
                 const float = document.createElement('div'); float.className = 'tap-effect'; float.innerText = `+${window.state.tapPower}`;
+                const randomX = (Math.random() - 0.5) * 50; // ✨ RANDOM X DIRECTION (-25px to 25px)
+                float.style.setProperty('--tx', `${randomX}px`);
                 float.style.left = `${x - 20}px`; float.style.top = `${y - 40}px`; document.body.appendChild(float);
                 setTimeout(() => float.remove(), 800);
+                
                 updateUI(); renderAll(true); queueSave();
             }
         }
@@ -321,15 +367,24 @@
 
             } else if (t.id === 'yt') {
                 window.open(t.link, '_blank');
-                btn.innerText = "Wait 10s...";
                 btn.style.pointerEvents = "none";
                 
-                setTimeout(() => {
-                    window.state.balance += t.reward; t.done = true;
-                    buySound.currentTime=0; buySound.play();
-                    saveToCloud(); renderAll();
-                    alert("YouTube Task Complete! 📺");
-                }, 10000); 
+                // ⏳ LIVE COUNTDOWN TIMER ⏳
+                let timeLeft = 10;
+                btn.innerText = `${timeLeft}s...`;
+                
+                const timerId = setInterval(() => {
+                    timeLeft--;
+                    btn.innerText = `${timeLeft}s...`;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(timerId);
+                        window.state.balance += t.reward; t.done = true;
+                        buySound.currentTime=0; buySound.play();
+                        saveToCloud(); renderAll();
+                        alert("YouTube Task Complete! 📺");
+                    }
+                }, 1000);
             }
         }
 
