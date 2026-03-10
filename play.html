@@ -127,7 +127,6 @@
         tg.expand(); 
         tg.ready();
 
-        // 🚨 TUMHARA NEW SECURE API URL YAHAN HAI 🚨
         const API_URL = "https://script.google.com/macros/s/AKfycbym3xIMSNcGeHDwxFz13BA_XS0tP9E0eYYWkv0aR7vAsE2KtBvcq51o3CKnIjyjip32/exec";
         const CHANNEL_USERNAME = "@ProjectNexOfficial";
 
@@ -276,7 +275,8 @@
             const b = window.state.boosts[id]; const cost = Math.floor(b.baseCost * Math.pow(2, b.level - 1));
             if(window.state.balance >= cost) { window.state.balance -= cost; b.level++; if(id === 'multitap') window.state.tapPower++; if(id === 'energyLimit') window.state.maxEnergy += 500; buySound.currentTime=0; buySound.play(); saveToCloud(); renderAll(); }
         }
-                // 🚀 SECURE TASK VERIFICATION LOGIC 🚀
+        
+        // 🚀 SECURE TASK VERIFICATION LOGIC 🚀
         window.doTask = async function(index) {
             const t = window.state.tasks[index];
             if(t.done) return;
@@ -284,7 +284,7 @@
             const btn = document.getElementById(`task-btn-${index}`);
             
             if (t.id === 'tg') {
-                window.open(t.link, '_blank'); // Open Channel Link
+                window.open(t.link, '_blank'); 
                 
                 if (!tgUser) {
                     alert("Real verification only works inside the Telegram app!");
@@ -295,13 +295,8 @@
                 btn.style.opacity = "0.5";
 
                 try {
-                    // API Call (With special bypass parameters)
                     const checkUrl = `${API_URL}?userId=${playerId}&channel=${CHANNEL_USERNAME}`;
-                    const res = await fetch(checkUrl, { 
-                        method: 'GET',
-                        redirect: 'follow' 
-                    });
-                    
+                    const res = await fetch(checkUrl, { method: 'GET', redirect: 'follow' });
                     const text = await res.text();
                     
                     try {
@@ -317,7 +312,7 @@
                         }
                     } catch (parseErr) {
                         btn.innerText = "Start"; btn.style.opacity = "1";
-                        alert("API Error: Google is blocking access. API URL check karein!");
+                        alert("API Error: Google is blocking access. Make sure 'Who has access' is 'Anyone' in Script settings.");
                     }
                 } catch (e) {
                     btn.innerText = "Start"; btn.style.opacity = "1";
@@ -325,7 +320,6 @@
                 }
 
             } else if (t.id === 'yt') {
-                // YOUTUBE SMART TIMER
                 window.open(t.link, '_blank');
                 btn.innerText = "Wait 10s...";
                 btn.style.pointerEvents = "none";
@@ -338,3 +332,15 @@
                 }, 10000); 
             }
         }
+
+        function gameTick() {
+            const refill = window.state.boosts.recharge.level;
+            if (window.state.energy < window.state.maxEnergy) { window.state.energy = Math.min(window.state.maxEnergy, window.state.energy + refill); }
+            if (window.state.pph > 0) { window.state.balance += (window.state.pph / 3600); window.state.totalEarned += (window.state.pph / 3600); }
+            updateUI(); renderAll(true); queueSave();
+        }
+
+        window.onload = initCloud;
+    </script>
+</body>
+</html>
