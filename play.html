@@ -9,85 +9,100 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <style>
-        :root { --neon-cyan: #00ffff; --dark-bg: #050a0f; --card-bg: #0d161f; --text-gray: #888888; --accent-glow: rgba(0, 255, 255, 0.2); }
+        :root { --neon-cyan: #00ffff; --neon-gold: #ffd700; --dark-bg: #050a0f; --text-gray: #888888; --glass-bg: rgba(13, 22, 31, 0.6); --accent-glow: rgba(0, 255, 255, 0.2); }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Exo 2', sans-serif; background: var(--dark-bg); color: white; overflow: hidden; height: 100vh; user-select: none; }
-        .top-stats { display: flex; justify-content: space-between; padding: 15px 20px; background: rgba(0, 0, 0, 0.5); border-bottom: 1px solid var(--accent-glow); align-items: center;}
-        .stat-box { text-align: center; }
+        
+        /* Premium Top Bar */
+        .top-stats { display: flex; justify-content: space-between; padding: 15px 20px; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); border-bottom: 1px solid var(--accent-glow); align-items: center;}
+        .stat-box { text-align: center; width: 45%; }
         .stat-label { font-size: 10px; color: var(--text-gray); text-transform: uppercase; letter-spacing: 1px;}
-        .stat-value { font-size: 14px; color: var(--neon-cyan); font-weight: bold; }
+        .stat-value { font-size: 15px; color: var(--neon-cyan); font-weight: bold; }
+        
+        /* 🔥 Rank Progress Bar 🔥 */
+        .rank-progress-bg { width: 100%; height: 4px; background: #222; border-radius: 2px; margin-top: 5px; overflow: hidden; }
+        .rank-progress-fill { height: 100%; background: var(--neon-cyan); width: 0%; transition: width 0.3s ease; box-shadow: 0 0 5px var(--neon-cyan); }
+
         .page { display: none; padding: 20px; height: calc(100vh - 140px); overflow-y: auto; padding-bottom: 80px; }
-        .page.active { display: block; animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .page.active { display: block; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        
         .balance-container { text-align: center; margin-top: 10px; }
         .player-greeting { font-size: 14px; color: var(--text-gray); margin-bottom: 5px; }
-        .coin-balance { font-size: 48px; font-weight: 900; color: white; text-shadow: 0 0 20px rgba(0, 255, 255, 0.4); }
+        .coin-balance { font-size: 52px; font-weight: 900; color: white; text-shadow: 0 0 25px rgba(0, 255, 255, 0.5); }
         .currency-name { font-size: 18px; color: var(--neon-cyan); }
         
-        /* COIN & BACKGROUND OVERLAP */
-        .game-area { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 45vh; margin-top: 20px;}
-        .coin-wrapper { 
-            position: relative; width: 340px; height: 340px; display: flex; justify-content: center; align-items: center; 
-            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjdQ7_PUSk4I3ZLs2E1SAfBz5KVQpsuM_czD6_keQui1lhgig7-luZLi4CeCd1neWxLM8xMs3GXtANGX45S3t_40wgfSJ805kpgFcrrNBGhyphenhyphenOjab_5pXbdnCuwTlEMd47rQDiOR2rwnWk3cF1uDZOokZOiLLFGvCE0DxRA23uMRtuLxmzsRNoaCmijzvho/s1376/1000068547.png') no-repeat center center;
-            background-size: contain;
-        }
-        .main-coin { 
-            width: 210px; height: 210px; 
-            background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgleg2PGdSWOyTz8jmWPsJOShGD9hKIwJwp9yWM-2c3DY25FORtVUFZnvo_YON2RWkw2zRw5tItEAEDxLwDBZUtJWef1GgyNeenalHXXeNEXIpkuUR92GHgiGwGZyxbtp8h_T_0mGK88cNH8AsnVp_qxiE7RwAVb_oS4A7dtIXqMSb_cIX_16SB-lqJCng/s1462/1000068539.png') no-repeat center center; 
-            background-size: contain; border-radius: 50%; box-shadow: 0 0 50px rgba(0, 255, 255, 0.2); 
-            cursor: pointer; transition: transform 0.05s; z-index: 10; 
-        }
-        .main-coin:active { transform: scale(0.92); box-shadow: 0 0 80px rgba(0, 255, 255, 0.4); }
+        /* COIN & COMBO SYSTEM */
+        .game-area { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 45vh; margin-top: 20px; position: relative;}
+        
+        /* 🔥 Combo Multiplier Badge 🔥 */
+        #combo-badge { position: absolute; top: 0; right: 20px; background: rgba(255, 215, 0, 0.1); color: var(--neon-gold); border: 1px solid var(--neon-gold); padding: 5px 15px; border-radius: 20px; font-weight: 900; font-size: 14px; opacity: 0; transition: 0.3s; transform: scale(0.8); box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); z-index: 50;}
+        #combo-badge.active { opacity: 1; transform: scale(1); animation: pulseCombo 0.5s infinite alternate; }
+        @keyframes pulseCombo { from { transform: scale(1); } to { transform: scale(1.1); box-shadow: 0 0 25px rgba(255, 215, 0, 0.6); } }
 
-        /* ✨ DYNAMIC FLOATING TEXT ✨ */
+        .coin-wrapper { position: relative; width: 340px; height: 340px; display: flex; justify-content: center; align-items: center; background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjdQ7_PUSk4I3ZLs2E1SAfBz5KVQpsuM_czD6_keQui1lhgig7-luZLi4CeCd1neWxLM8xMs3GXtANGX45S3t_40wgfSJ805kpgFcrrNBGhyphenhyphenOjab_5pXbdnCuwTlEMd47rQDiOR2rwnWk3cF1uDZOokZOiLLFGvCE0DxRA23uMRtuLxmzsRNoaCmijzvho/s1376/1000068547.png') no-repeat center center; background-size: contain; }
+        .main-coin { width: 210px; height: 210px; background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgleg2PGdSWOyTz8jmWPsJOShGD9hKIwJwp9yWM-2c3DY25FORtVUFZnvo_YON2RWkw2zRw5tItEAEDxLwDBZUtJWef1GgyNeenalHXXeNEXIpkuUR92GHgiGwGZyxbtp8h_T_0mGK88cNH8AsnVp_qxiE7RwAVb_oS4A7dtIXqMSb_cIX_16SB-lqJCng/s1462/1000068539.png') no-repeat center center; background-size: contain; border-radius: 50%; box-shadow: 0 0 50px rgba(0, 255, 255, 0.1); cursor: pointer; transition: transform 0.05s; z-index: 10; }
+        .main-coin:active { transform: scale(0.92); box-shadow: 0 0 80px rgba(0, 255, 255, 0.5); }
+
         .tap-effect { position: absolute; color: white; font-weight: 900; font-size: 28px; text-shadow: 0 0 10px var(--neon-cyan); pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 100; }
+        .tap-effect.combo-hit { color: var(--neon-gold); text-shadow: 0 0 15px var(--neon-gold); font-size: 34px; }
         @keyframes floatUp { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), -120px) scale(1.5); opacity: 0; } }
         
         .energy-container { width: 85%; margin-top: 40px; }
         .energy-text { font-size: 14px; margin-bottom: 8px; font-weight: bold; }
-        .energy-bar-bg { width: 100%; height: 14px; background: #111; border-radius: 10px; border: 1px solid var(--accent-glow); overflow: hidden; }
-        .energy-bar-fill { height: 100%; background: linear-gradient(90deg, #004080, var(--neon-cyan)); transition: width 0.2s; }
-        .section-heading { font-size: 20px; color: var(--neon-cyan); margin-bottom: 15px; text-align: center;}
+        .energy-bar-bg { width: 100%; height: 12px; background: rgba(0,0,0,0.5); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; }
+        .energy-bar-fill { height: 100%; background: linear-gradient(90deg, #004080, var(--neon-cyan)); transition: width 0.1s; box-shadow: 0 0 10px var(--neon-cyan); }
+        
+        .section-heading { font-size: 20px; color: var(--neon-cyan); margin-bottom: 15px; text-align: center; text-transform: uppercase; letter-spacing: 2px;}
         .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .list-container { display: flex; flex-direction: column; gap: 15px; }
-        .premium-card { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; transition: 0.3s; position: relative; display: flex; flex-direction: column; justify-content: space-between; }
-        .premium-card:active { transform: scale(0.98); border-color: var(--neon-cyan); }
-        .premium-card.disabled { opacity: 0.4; pointer-events: none; }
-        .card-header { font-size: 13px; font-weight: bold; color: white; margin-bottom: 5px; }
+        
+        /* 💎 Glassmorphism Premium Cards 💎 */
+        .premium-card { background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid rgba(0, 255, 255, 0.1); border-radius: 16px; padding: 18px; transition: 0.3s; position: relative; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 15px rgba(0,0,0,0.3);}
+        .premium-card:active { transform: scale(0.97); border-color: var(--neon-cyan); }
+        .premium-card.disabled { opacity: 0.5; filter: grayscale(100%); pointer-events: none; }
+        .card-header { font-size: 14px; font-weight: 900; color: white; margin-bottom: 5px; }
         .card-sub { font-size: 11px; color: var(--text-gray); margin-bottom: 12px; }
-        .card-sub span { color: #00ff00; }
-        .card-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .price { color: var(--neon-cyan); font-weight: bold; font-size: 13px; }
-        .level { font-size: 10px; background: rgba(0,0,0,0.5); padding: 3px 6px; border-radius: 4px; }
+        .card-sub span { color: #00ff00; font-weight: bold;}
+        .card-bottom { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .price { color: var(--neon-cyan); font-weight: bold; font-size: 14px; }
+        .level { font-size: 10px; background: rgba(0,255,255,0.1); color: var(--neon-cyan); padding: 4px 8px; border-radius: 6px; font-weight: bold;}
+        
         .task-card { display: flex; justify-content: space-between; align-items: center; flex-direction: row; }
-        .task-btn { background: rgba(0, 255, 255, 0.1); color: var(--neon-cyan); padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; text-align: center; min-width: 65px;}
-        .task-card.completed .task-btn { background: #222; color: #888; pointer-events: none; }
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #020508; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--accent-glow); z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-item { text-align: center; color: var(--text-gray); text-decoration: none; font-size: 11px; flex: 1; transition: 0.3s; padding: 10px 0; }
-        .nav-item.active { color: var(--neon-cyan); transform: translateY(-3px); }
-        .nav-icon { font-size: 22px; display: block; margin-bottom: 4px; }
-        #sync-status { position: absolute; top: 15px; right: 20px; font-size: 10px; color: var(--text-gray); }
+        .task-btn { background: rgba(0, 255, 255, 0.1); color: var(--neon-cyan); padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; text-align: center; min-width: 80px; border: 1px solid rgba(0, 255, 255, 0.3); transition: 0.2s;}
+        .task-card.completed .task-btn { background: rgba(255,255,255,0.05); color: var(--text-gray); border-color: transparent; pointer-events: none; }
+        
+        /* Sleek Nav */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 80px; background: rgba(2, 5, 8, 0.9); backdrop-filter: blur(15px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { text-align: center; color: var(--text-gray); text-decoration: none; font-size: 11px; flex: 1; transition: 0.3s; padding: 10px 0; font-weight: bold;}
+        .nav-item.active { color: var(--neon-cyan); transform: translateY(-5px); text-shadow: 0 0 10px var(--neon-cyan); }
+        .nav-icon { font-size: 24px; display: block; margin-bottom: 5px; }
+        
+        #sync-status { position: absolute; top: 15px; right: 20px; font-size: 10px; color: var(--text-gray); font-weight: bold; background: rgba(0,0,0,0.5); padding: 3px 8px; border-radius: 10px;}
         .syncing { color: var(--neon-cyan) !important; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         
-        /* Modal Popup for Offline Earnings */
-        #offline-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
-        .modal-content { background: var(--card-bg); border: 1px solid var(--neon-cyan); padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 0 30px rgba(0,255,255,0.2); width: 80%; }
-        .modal-title { font-size: 20px; color: white; margin-bottom: 10px; }
-        .modal-coins { font-size: 32px; font-weight: 900; color: var(--neon-cyan); margin-bottom: 20px; text-shadow: 0 0 10px rgba(0,255,255,0.5); }
-        .modal-btn { background: var(--neon-cyan); color: #000; border: none; padding: 10px 25px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; }
+        /* Modal Popup */
+        #offline-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
+        .modal-content { background: var(--glass-bg); border: 1px solid var(--neon-cyan); padding: 35px; border-radius: 20px; text-align: center; box-shadow: 0 0 40px rgba(0,255,255,0.15); width: 85%; backdrop-filter: blur(20px);}
+        .modal-title { font-size: 22px; color: white; margin-bottom: 10px; font-weight: 900;}
+        .modal-coins { font-size: 38px; font-weight: 900; color: var(--neon-cyan); margin-bottom: 25px; text-shadow: 0 0 15px rgba(0,255,255,0.4); }
+        .modal-btn { background: var(--neon-cyan); color: #000; border: none; padding: 14px 30px; font-size: 16px; font-weight: 900; border-radius: 12px; cursor: pointer; width: 100%; text-transform: uppercase; box-shadow: 0 0 15px rgba(0,255,255,0.4);}
     </style>
 </head>
 <body>
 
-    <audio id="tapSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.mp3"></audio>
-    <audio id="buySound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3"></audio>
-
     <div class="top-stats">
-        <div class="stat-box"><p class="stat-label">Rank</p><p class="stat-value" id="user-rank">Beginner</p></div>
-        <div class="stat-box"><p class="stat-label">Profit per hour</p><p class="stat-value">+<span id="pph-display">0</span></p></div>
+        <div class="stat-box">
+            <p class="stat-label" id="user-rank">Beginner</p>
+            <div class="rank-progress-bg"><div class="rank-progress-fill" id="rank-fill"></div></div>
+        </div>
+        <div class="stat-box">
+            <p class="stat-label">Profit / Hour</p>
+            <p class="stat-value">+<span id="pph-display">0</span></p>
+        </div>
     </div>
-    <span id="sync-status">☁️ Connecting...</span>
+    <span id="sync-status">☁️ Sync</span>
 
     <div id="home-page" class="page active">
         <div class="balance-container">
@@ -95,6 +110,7 @@
             <p class="coin-balance"><span id="coin-balance">0</span> <span class="currency-name">$NEX</span></p>
         </div>
         <div class="game-area">
+            <div id="combo-badge">🔥 x2 COMBO</div>
             <div class="coin-wrapper">
                 <div class="main-coin" id="tap-coin"></div>
             </div>
@@ -105,33 +121,33 @@
         </div>
     </div>
 
-    <div id="mine-page" class="page"><h2 class="section-heading">Mining Operations</h2><div class="grid-container" id="cards-container"></div></div>
-    <div id="earn-page" class="page"><h2 class="section-heading">Social Missions</h2><div class="list-container" id="tasks-container"></div></div>
+    <div id="mine-page" class="page"><h2 class="section-heading">Mining Setup</h2><div class="grid-container" id="cards-container"></div></div>
+    <div id="earn-page" class="page"><h2 class="section-heading">Social Quests</h2><div class="list-container" id="tasks-container"></div></div>
     <div id="boost-page" class="page"><h2 class="section-heading">Upgrades</h2><div class="list-container" id="boost-container"></div></div>
     <div id="friends-page" class="page">
-        <h2 class="section-heading">Referral Center</h2>
+        <h2 class="section-heading">Referral Hub</h2>
         <div class="premium-card" style="text-align:center; display:block;">
-            <p style="font-size:12px; color:var(--text-gray); margin-bottom:10px;">Share your link and earn 5,000 $NEX per invite!</p>
-            <div style="background:#000; padding:10px; border-radius:8px; font-size:10px; word-break:break-all; border:1px solid #333; margin-bottom:15px;" id="ref-link">
+            <p style="font-size:13px; color:var(--text-gray); margin-bottom:15px; font-weight:bold;">Share your link and earn 5,000 $NEX per invite!</p>
+            <div style="background:rgba(0,0,0,0.5); padding:12px; border-radius:10px; font-size:11px; word-break:break-all; border:1px solid rgba(255,255,255,0.1); margin-bottom:20px; color:var(--neon-cyan);" id="ref-link">
                 Loading...
             </div>
-            <button style="background:var(--neon-cyan); color:#000; padding:10px 20px; border:none; border-radius:5px; font-weight:bold; width:100%;">Copy Link</button>
+            <button style="background:var(--neon-cyan); color:#000; padding:12px 20px; border:none; border-radius:10px; font-weight:900; width:100%; font-size:14px; box-shadow: 0 0 15px rgba(0,255,255,0.3);">COPY LINK</button>
         </div>
     </div>
 
     <nav class="bottom-nav">
         <a class="nav-item active" onclick="nav('home-page', this)"><span class="nav-icon">🏠</span>Home</a>
         <a class="nav-item" onclick="nav('mine-page', this)"><span class="nav-icon">⛏️</span>Mine</a>
-        <a class="nav-item" onclick="nav('earn-page', this)"><span class="nav-icon">💰</span>Earn</a>
+        <a class="nav-item" onclick="nav('earn-page', this)"><span class="nav-icon">💎</span>Earn</a>
         <a class="nav-item" onclick="nav('boost-page', this)"><span class="nav-icon">🚀</span>Boost</a>
         <a class="nav-item" onclick="nav('friends-page', this)"><span class="nav-icon">👥</span>Friends</a>
     </nav>
     
     <div id="offline-modal">
         <div class="modal-content">
-            <p class="modal-title">Welcome back, CEO! 🚀<br><span style="font-size:12px;color:var(--text-gray);">Your offline miners collected:</span></p>
+            <p class="modal-title">Welcome back, CEO! 🚀<br><span style="font-size:13px;color:var(--text-gray); font-weight:normal;">Your Web3 nodes mined:</span></p>
             <p class="modal-coins" id="offline-coins">0</p>
-            <button class="modal-btn" onclick="document.getElementById('offline-modal').style.display='none'">Claim</button>
+            <button class="modal-btn" onclick="document.getElementById('offline-modal').style.display='none'">Collect Income</button>
         </div>
     </div>
 
@@ -154,7 +170,7 @@
         if (tgUser) {
             playerId = tgUser.id.toString(); 
             playerName = tgUser.first_name;  
-            document.getElementById('player-greeting').innerText = `Hello, ${playerName}! 👋`;
+            document.getElementById('player-greeting').innerText = `Hello, ${playerName}!`;
         } else {
             playerId = localStorage.getItem('nexPlayerId') || 'NEX_' + Math.random().toString(36).substr(2, 9).toUpperCase();
             localStorage.setItem('nexPlayerId', playerId);
@@ -175,6 +191,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // 🔥 STATE MANAGEMENT 🔥
         window.state = {
             tgName: playerName, 
             balance: 0, pph: 0, energy: 1000, maxEnergy: 1000, tapPower: 1, totalEarned: 0,
@@ -191,11 +208,15 @@
             ]
         };
 
-        const ranks = [{n:"Beginner", t:0}, {n:"Amateur", t:50000}, {n:"Pro", t:250000}, {n:"Legend", t:1000000}];
-        const tapSound = document.getElementById('tapSound');
-        const buySound = document.getElementById('buySound');
+        const ranks = [{n:"Beginner", t:0}, {n:"Amateur", t:50000}, {n:"Pro", t:250000}, {n:"Legend", t:1000000}, {n:"Mythic", t:5000000}];
         const syncStatus = document.getElementById('sync-status');
         let saveTimeout;
+        
+        // ⚡ COMBO METER LOGIC ⚡
+        let comboCount = 0;
+        let lastTapTime = 0;
+        let comboActive = false;
+        let comboTimer;
 
         async function initCloud() {
             try {
@@ -216,7 +237,7 @@
                             
                             document.getElementById('offline-coins').innerText = `+${Math.floor(earned).toLocaleString()}`;
                             document.getElementById('offline-modal').style.display = 'flex';
-                            buySound.play();
+                            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
                         }
                         
                         const refill = window.state.boosts.recharge.level * offlineSeconds;
@@ -229,12 +250,12 @@
         }
 
         async function saveToCloud() {
-            syncStatus.innerText = "☁️ Syncing..."; syncStatus.classList.add('syncing');
+            syncStatus.innerText = "☁️..."; syncStatus.classList.add('syncing');
             window.state.lastSync = Date.now(); 
             try {
                 await setDoc(doc(db, "players", playerId), window.state);
-                syncStatus.innerText = "☁️ Saved"; syncStatus.classList.remove('syncing');
-            } catch(e) { syncStatus.innerText = "⚠️ Cloud Error"; syncStatus.classList.remove('syncing'); }
+                syncStatus.innerText = "✓ Saved"; syncStatus.classList.remove('syncing');
+            } catch(e) { syncStatus.innerText = "⚠️ Err"; syncStatus.classList.remove('syncing'); }
         }
 
         function queueSave() { clearTimeout(saveTimeout); saveTimeout = setTimeout(saveToCloud, 3000); }
@@ -243,18 +264,30 @@
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(pageId).classList.add('active'); el.classList.add('active');
-        }
-
-        function getRank() {
-            let r = ranks[0].n;
-            for (let i = ranks.length-1; i >= 0; i--) { if(window.state.totalEarned >= ranks[i].t) return ranks[i].n; }
-            return r;
+            if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
         }
 
         function updateUI() {
             document.getElementById('coin-balance').innerText = Math.floor(window.state.balance).toLocaleString();
             document.getElementById('pph-display').innerText = window.state.pph.toLocaleString();
-            document.getElementById('user-rank').innerText = getRank();
+            
+            // PROGRESS BAR LOGIC
+            let currentRank = ranks[0].n;
+            let nextRankTarget = ranks[1].t;
+            let prevRankTarget = 0;
+            
+            for (let i = 0; i < ranks.length; i++) {
+                if (window.state.totalEarned >= ranks[i].t) {
+                    currentRank = ranks[i].n;
+                    prevRankTarget = ranks[i].t;
+                    nextRankTarget = ranks[i+1] ? ranks[i+1].t : ranks[i].t * 2; // Cap handling
+                }
+            }
+            
+            document.getElementById('user-rank').innerText = currentRank;
+            const progressPercent = Math.min(100, ((window.state.totalEarned - prevRankTarget) / (nextRankTarget - prevRankTarget)) * 100);
+            document.getElementById('rank-fill').style.width = `${progressPercent}%`;
+            
             document.getElementById('current-energy').innerText = Math.floor(window.state.energy);
             document.getElementById('max-energy').innerText = window.state.maxEnergy;
             document.getElementById('energy-fill').style.width = `${(window.state.energy / window.state.maxEnergy) * 100}%`;
@@ -265,13 +298,37 @@
 
         function handleTap(x, y) {
             if (window.state.energy >= window.state.tapPower) {
-                window.state.balance += window.state.tapPower; window.state.totalEarned += window.state.tapPower; window.state.energy -= window.state.tapPower;
                 
-                tapSound.currentTime = 0; tapSound.play();
-                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light'); 
+                // COMBO SYSTEM CALCULATION
+                const now = Date.now();
+                if (now - lastTapTime < 600) { comboCount++; } else { comboCount = 1; comboActive = false; document.getElementById('combo-badge').classList.remove('active'); }
+                lastTapTime = now;
                 
-                const float = document.createElement('div'); float.className = 'tap-effect'; float.innerText = `+${window.state.tapPower}`;
-                const randomX = (Math.random() - 0.5) * 50; 
+                clearTimeout(comboTimer);
+                comboTimer = setTimeout(() => { comboCount = 0; comboActive = false; document.getElementById('combo-badge').classList.remove('active'); }, 1000);
+
+                let currentMultiplier = 1;
+                if (comboCount > 15) { 
+                    comboActive = true; 
+                    currentMultiplier = 2; 
+                    document.getElementById('combo-badge').classList.add('active'); 
+                }
+                
+                const coinsToGive = window.state.tapPower * currentMultiplier;
+                window.state.balance += coinsToGive; 
+                window.state.totalEarned += coinsToGive; 
+                window.state.energy -= window.state.tapPower; // Energy drains normal, but reward is 2x!
+                
+                // PURE HAPTIC FEEDBACK (NO AUDIO)
+                if (tg.HapticFeedback) {
+                    if (comboActive) tg.HapticFeedback.impactOccurred('heavy');
+                    else tg.HapticFeedback.impactOccurred('light'); 
+                }
+                
+                const float = document.createElement('div'); 
+                float.className = `tap-effect ${comboActive ? 'combo-hit' : ''}`; 
+                float.innerText = `+${coinsToGive}`;
+                const randomX = (Math.random() - 0.5) * 60; 
                 float.style.setProperty('--tx', `${randomX}px`);
                 float.style.left = `${x - 20}px`; float.style.top = `${y - 40}px`; document.body.appendChild(float);
                 setTimeout(() => float.remove(), 800);
@@ -301,7 +358,7 @@
             }
             
             const bCont = document.getElementById('boost-container'); if(!onlyDynamic) bCont.innerHTML = '';
-            const boostsData = [ {id:'multitap', n:'Multitap', d:`+${window.state.boosts.multitap.level} Coins`}, {id:'energyLimit', n:'Energy Limit', d:'+500 Max Energy'}, {id:'recharge', n:'Recharge Speed', d:'Faster refill'} ];
+            const boostsData = [ {id:'multitap', n:'Multitap Engine', d:`+${window.state.boosts.multitap.level} per tap`}, {id:'energyLimit', n:'Battery Expansion', d:'+500 Max Energy'}, {id:'recharge', n:'Fast Charger', d:'Faster refill'} ];
             boostsData.forEach((b, i) => {
                 const data = window.state.boosts[b.id]; const cost = Math.floor(data.baseCost * Math.pow(2, data.level - 1));
                 if(onlyDynamic) { const el = document.getElementById(`boost-${i}`); if(el) el.className = `premium-card task-card ${window.state.balance < cost ? 'disabled' : ''}`; return; }
@@ -313,11 +370,20 @@
 
         window.buyCard = function(index) {
             const c = window.state.cards[index]; const cost = Math.floor(c.cost * Math.pow(1.5, c.lvl));
-            if(window.state.balance >= cost) { window.state.balance -= cost; window.state.pph += c.pph; c.lvl++; buySound.currentTime=0; buySound.play(); saveToCloud(); renderAll(); }
+            if(window.state.balance >= cost) { 
+                window.state.balance -= cost; window.state.pph += c.pph; c.lvl++; 
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                saveToCloud(); renderAll(); 
+            }
         }
         window.buyBoost = function(id) {
             const b = window.state.boosts[id]; const cost = Math.floor(b.baseCost * Math.pow(2, b.level - 1));
-            if(window.state.balance >= cost) { window.state.balance -= cost; b.level++; if(id === 'multitap') window.state.tapPower++; if(id === 'energyLimit') window.state.maxEnergy += 500; buySound.currentTime=0; buySound.play(); saveToCloud(); renderAll(); }
+            if(window.state.balance >= cost) { 
+                window.state.balance -= cost; b.level++; 
+                if(id === 'multitap') window.state.tapPower++; if(id === 'energyLimit') window.state.maxEnergy += 500; 
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                saveToCloud(); renderAll(); 
+            }
         }
         
         // 🚀 SECURE TASK VERIFICATION LOGIC 🚀
@@ -326,17 +392,14 @@
             if(t.done) return;
 
             const btn = document.getElementById(`task-btn-${index}`);
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
             
             if (t.id === 'tg') {
                 window.open(t.link, '_blank'); 
                 
-                if (!tgUser) {
-                    alert("Real verification only works inside the Telegram app!");
-                    return;
-                }
+                if (!tgUser) { alert("Real verification only works inside the Telegram app!"); return; }
 
-                btn.innerText = "Checking...";
-                btn.style.opacity = "0.5";
+                btn.innerText = "Checking..."; btn.style.opacity = "0.5";
 
                 try {
                     const checkUrl = `${API_URL}?userId=${playerId}&channel=${CHANNEL_USERNAME}`;
@@ -347,16 +410,17 @@
                         const data = JSON.parse(text);
                         if (data.success && data.joined) {
                             window.state.balance += t.reward; t.done = true;
-                            buySound.currentTime=0; buySound.play();
+                            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
                             saveToCloud(); renderAll();
                             alert("Verification Successful! Reward added. 🚀");
                         } else {
                             btn.innerText = "Start"; btn.style.opacity = "1";
-                            alert("Verification Failed: You haven't joined yet! ❌\nReason: " + (data.error || "Not a member"));
+                            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+                            alert("Verification Failed: You haven't joined yet! ❌");
                         }
                     } catch (parseErr) {
                         btn.innerText = "Start"; btn.style.opacity = "1";
-                        alert("API Error: Google is blocking access. Make sure 'Who has access' is 'Anyone' in Script settings.");
+                        alert("API Error: Google is blocking access.");
                     }
                 } catch (e) {
                     btn.innerText = "Start"; btn.style.opacity = "1";
@@ -367,20 +431,18 @@
                 window.open(t.link, '_blank');
                 btn.style.pointerEvents = "none";
                 
-                // ⏳ LIVE COUNTDOWN TIMER ⏳
                 let timeLeft = 10;
-                btn.innerText = `${timeLeft}s...`;
+                btn.innerText = `${timeLeft}s`;
                 
                 const timerId = setInterval(() => {
                     timeLeft--;
-                    btn.innerText = `${timeLeft}s...`;
+                    btn.innerText = `${timeLeft}s`;
                     
                     if (timeLeft <= 0) {
                         clearInterval(timerId);
                         window.state.balance += t.reward; t.done = true;
-                        buySound.currentTime=0; buySound.play();
+                        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
                         saveToCloud(); renderAll();
-                        alert("YouTube Task Complete! 📺");
                     }
                 }, 1000);
             }
