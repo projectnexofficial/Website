@@ -3,35 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Project NEX | Play & Earn</title>
+    <title>Project NEX | Master Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --neon-cyan: #00ffff; --neon-gold: #ffd700; --dark-bg: #050a0f; --text-gray: #888888; --glass-bg: rgba(13, 22, 31, 0.6); --accent-glow: rgba(0, 255, 255, 0.2); }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Exo 2', sans-serif; background: var(--dark-bg); color: white; overflow: hidden; height: 100vh; user-select: none; }
+        
+        /* Top Bar & Progress */
         .top-stats { display: flex; justify-content: space-between; padding: 15px 20px; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); border-bottom: 1px solid var(--accent-glow); align-items: center;}
         .stat-box { text-align: center; width: 45%; }
-        .stat-label { font-size: 10px; color: var(--text-gray); text-transform: uppercase; letter-spacing: 1px;}
+        .stat-label { font-size: 10px; color: var(--text-gray); text-transform: uppercase; }
         .stat-value { font-size: 15px; color: var(--neon-cyan); font-weight: bold; }
         .rank-progress-bg { width: 100%; height: 4px; background: #222; border-radius: 2px; margin-top: 5px; overflow: hidden; }
         .rank-progress-fill { height: 100%; background: var(--neon-cyan); width: 0%; transition: width 0.3s ease; box-shadow: 0 0 5px var(--neon-cyan); }
+
         .page { display: none; padding: 20px; height: calc(100vh - 140px); overflow-y: auto; padding-bottom: 80px; }
         .page.active { display: block; animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        
         .balance-container { text-align: center; margin-top: 10px; }
-        .player-greeting { font-size: 14px; color: var(--text-gray); margin-bottom: 5px; }
-        .coin-balance { font-size: 52px; font-weight: 900; color: white; text-shadow: 0 0 25px rgba(0, 255, 255, 0.5); }
+        .coin-balance { font-size: 48px; font-weight: 900; color: white; text-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
+        
+        /* Coin Area */
         .game-area { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 45vh; margin-top: 20px; position: relative;}
-        .coin-wrapper { position: relative; width: 320px; height: 320px; display: flex; justify-content: center; align-items: center; background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjdQ7_PUSk4I3ZLs2E1SAfBz5KVQpsuM_czD6_keQui1lhgig7-luZLi4CeCd1neWxLM8xMs3GXtANGX45S3t_40wgfSJ805kpgFcrrNBGhyphenhyphenOjab_5pXbdnCuwTlEMd47rQDiOR2rwnWk3cF1uDZOokZOiLLFGvCE0DxRA23uMRtuLxmzsRNoaCmijzvho/s1376/1000068547.png') no-repeat center center; background-size: contain; }
-        .main-coin { width: 200px; height: 200px; background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgleg2PGdSWOyTz8jmWPsJOShGD9hKIwJwp9yWM-2c3DY25FORtVUFZnvo_YON2RWkw2zRw5tItEAEDxLwDBZUtJWef1GgyNeenalHXXeNEXIpkuUR92GHgiGwGZyxbtp8h_T_0mGK88cNH8AsnVp_qxiE7RwAVb_oS4A7dtIXqMSb_cIX_16SB-lqJCng/s1462/1000068539.png') no-repeat center center; background-size: contain; border-radius: 50%; cursor: pointer; transition: transform 0.05s; }
-        .main-coin:active { transform: scale(0.95); }
-        .energy-container { width: 85%; margin-top: 40px; }
-        .energy-bar-bg { width: 100%; height: 10px; background: #222; border-radius: 5px; overflow: hidden; }
+        .coin-wrapper { position: relative; width: 300px; height: 300px; display: flex; justify-content: center; align-items: center; background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjdQ7_PUSk4I3ZLs2E1SAfBz5KVQpsuM_czD6_keQui1lhgig7-luZLi4CeCd1neWxLM8xMs3GXtANGX45S3t_40wgfSJ805kpgFcrrNBGhyphenhyphenOjab_5pXbdnCuwTlEMd47rQDiOR2rwnWk3cF1uDZOokZOiLLFGvCE0DxRA23uMRtuLxmzsRNoaCmijzvho/s1376/1000068547.png') no-repeat center center; background-size: contain; }
+        .main-coin { width: 190px; height: 190px; background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgleg2PGdSWOyTz8jmWPsJOShGD9hKIwJwp9yWM-2c3DY25FORtVUFZnvo_YON2RWkw2zRw5tItEAEDxLwDBZUtJWef1GgyNeenalHXXeNEXIpkuUR92GHgiGwGZyxbtp8h_T_0mGK88cNH8AsnVp_qxiE7RwAVb_oS4A7dtIXqMSb_cIX_16SB-lqJCng/s1462/1000068539.png') no-repeat center center; background-size: contain; border-radius: 50%; cursor: pointer; transition: transform 0.05s; }
+        .main-coin:active { transform: scale(0.92); }
+
+        /* Energy */
+        .energy-container { width: 85%; margin-top: 30px; }
+        .energy-bar-bg { width: 100%; height: 10px; background: #111; border-radius: 5px; overflow: hidden; border: 1px solid #333; }
         .energy-bar-fill { height: 100%; background: var(--neon-cyan); width: 100%; transition: width 0.1s; }
-        .section-heading { font-size: 20px; color: var(--neon-cyan); margin-bottom: 20px; text-align: center; }
-        .premium-card { background: var(--glass-bg); border: 1px solid rgba(0, 255, 255, 0.1); border-radius: 15px; padding: 20px; margin-bottom: 15px; text-align: center; }
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; }
+
+        /* Cards & Boosts */
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .premium-card { background: var(--glass-bg); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; text-align: left; }
+        .premium-card.disabled { opacity: 0.5; filter: grayscale(1); }
+        .card-title { font-size: 12px; font-weight: bold; color: white; margin-bottom: 5px; }
+        .card-pph { font-size: 10px; color: #00ff00; margin-bottom: 10px; }
+        .price-tag { color: var(--neon-cyan); font-weight: 900; font-size: 12px; }
+
+        /* Nav */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; padding-bottom: 10px; }
         .nav-item { color: var(--text-gray); text-decoration: none; font-size: 10px; text-align: center; flex: 1; }
         .nav-item.active { color: var(--neon-cyan); }
         .nav-icon { display: block; font-size: 20px; margin-bottom: 2px; }
@@ -52,29 +67,41 @@
 
     <div id="home-page" class="page active">
         <div class="balance-container">
-            <p class="player-greeting" id="player-greeting">Hello, CEO!</p>
+            <p style="font-size:12px; color:var(--text-gray);" id="player-greeting">Hello, CEO!</p>
             <p class="coin-balance"><span id="coin-balance">0</span> <span style="font-size:16px; color:var(--neon-cyan)">$NEX</span></p>
         </div>
         <div class="game-area">
             <div class="coin-wrapper"><div class="main-coin" id="tap-coin"></div></div>
             <div class="energy-container">
-                <p style="font-size:12px; margin-bottom:5px;">⚡ <span id="current-energy">1000</span> / 1000</p>
+                <p style="font-size:11px; margin-bottom:5px;">⚡ <span id="current-energy">1000</span> / <span id="max-energy">1000</span></p>
                 <div class="energy-bar-bg"><div class="energy-bar-fill" id="energy-fill"></div></div>
             </div>
         </div>
     </div>
 
+    <div id="mine-page" class="page">
+        <h2 style="text-align:center; margin-bottom:20px; font-size:18px; color:var(--neon-cyan)">MINING NODES</h2>
+        <div class="grid-container" id="cards-container"></div>
+    </div>
+
+    <div id="boost-page" class="page">
+        <h2 style="text-align:center; margin-bottom:20px; font-size:18px; color:var(--neon-cyan)">UPGRADES</h2>
+        <div id="boost-container"></div>
+    </div>
+
     <div id="friends-page" class="page">
-        <h2 class="section-heading">Referral Hub</h2>
-        <div class="premium-card">
-            <p style="font-size:13px; color:var(--text-gray); margin-bottom:15px;">Invite friends & earn 5,000 $NEX!</p>
-            <div id="ref-link" style="background:rgba(0,0,0,0.5); padding:10px; border-radius:8px; font-size:11px; margin-bottom:15px; color:var(--neon-cyan); word-break:break-all;">Loading...</div>
-            <button id="copy-btn" onclick="copyRefLink()" style="background:var(--neon-cyan); color:#000; padding:12px 25px; border:none; border-radius:10px; font-weight:bold; width:100%;">COPY LINK</button>
+        <h2 style="text-align:center; margin-bottom:20px; font-size:18px; color:var(--neon-cyan)">REFERRALS</h2>
+        <div class="premium-card" style="text-align:center;">
+            <p style="font-size:13px; margin-bottom:10px;">Earn 5,000 $NEX per friend!</p>
+            <div id="ref-link" style="background:#000; padding:10px; border-radius:8px; font-size:10px; color:var(--neon-cyan); margin-bottom:15px; word-break:break-all;">Loading...</div>
+            <button id="copy-btn" onclick="copyRefLink()" style="background:var(--neon-cyan); color:#000; padding:12px; border:none; border-radius:10px; font-weight:bold; width:100%;">COPY LINK</button>
         </div>
     </div>
 
     <nav class="bottom-nav">
         <a class="nav-item active" onclick="nav('home-page', this)"><span class="nav-icon">🏠</span>Home</a>
+        <a class="nav-item" onclick="nav('mine-page', this)"><span class="nav-icon">⛏️</span>Mine</a>
+        <a class="nav-item" onclick="nav('boost-page', this)"><span class="nav-icon">🚀</span>Boost</a>
         <a class="nav-item" onclick="nav('friends-page', this)"><span class="nav-icon">👥</span>Friends</a>
     </nav>
 
@@ -82,16 +109,25 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // 🔥 DATABASE CONFIG 🔥
         const DB_URL = "https://projectnexgame-default-rtdb.firebaseio.com/players/";
         const playerId = tg.initDataUnsafe?.user?.id.toString() || "5916215735";
         const playerName = tg.initDataUnsafe?.user?.first_name || "CEO";
 
-        let balance = 0;
-        let pph = 0;
-        let energy = 1000;
+        // Global State
+        let state = {
+            balance: 0, pph: 0, energy: 1000, maxEnergy: 1000, tapPower: 1,
+            cards: [
+                { id: 0, name: "Cloud Node", cost: 100, pph: 5, lvl: 0 },
+                { id: 1, name: "AI Trader", cost: 500, pph: 25, lvl: 0 },
+                { id: 2, name: "Web3 Server", cost: 2000, pph: 120, lvl: 0 },
+                { id: 3, name: "Quantum Node", cost: 10000, pph: 600, lvl: 0 }
+            ],
+            boosts: {
+                multitap: { lvl: 1, cost: 500 },
+                energy: { lvl: 1, cost: 500 }
+            }
+        };
 
-        // 1. डेटा लोड करें (From Realtime DB)
         async function loadData() {
             document.getElementById('player-greeting').innerText = `Hello, ${playerName}!`;
             document.getElementById('ref-link').innerText = `https://t.me/ProjectNexOfficial_bot?start=${playerId}`;
@@ -100,62 +136,114 @@
                 const res = await fetch(`${DB_URL}${playerId}.json`);
                 const data = await res.json();
                 if (data) {
-                    balance = data.balance || 0;
-                    pph = data.pph || 0;
-                    updateUI();
+                    state.balance = data.balance || 0;
+                    state.pph = data.pph || 0;
+                    state.cards = data.cards || state.cards;
+                    state.boosts = data.boosts || state.boosts;
+                    state.maxEnergy = data.maxEnergy || 1000;
+                    state.tapPower = data.tapPower || 1;
                 }
-            } catch (e) { console.error("Load Error", e); }
+                updateUI();
+                renderMine();
+                renderBoosts();
+            } catch (e) { console.error(e); }
         }
 
-        // 2. UI अपडेट करें
         function updateUI() {
-            document.getElementById('coin-balance').innerText = Math.floor(balance).toLocaleString();
-            document.getElementById('pph-display').innerText = pph.toLocaleString();
-            document.getElementById('current-energy').innerText = energy;
-            document.getElementById('energy-fill').style.width = `${(energy / 1000) * 100}%`;
+            document.getElementById('coin-balance').innerText = Math.floor(state.balance).toLocaleString();
+            document.getElementById('pph-display').innerText = state.pph.toLocaleString();
+            document.getElementById('current-energy').innerText = Math.floor(state.energy);
+            document.getElementById('max-energy').innerText = state.maxEnergy;
+            document.getElementById('energy-fill').style.width = `${(state.energy / state.maxEnergy) * 100}%`;
+            
+            // Rank Logic
+            let rank = "Beginner"; let fill = 0;
+            if(state.balance > 1000000) rank = "Legend";
+            else if(state.balance > 100000) rank = "Pro";
+            else if(state.balance > 10000) rank = "Amateur";
+            document.getElementById('user-rank').innerText = rank;
         }
 
-        // 3. टैपिंग लॉजिक
-        document.getElementById('tap-coin').addEventListener('click', (e) => {
-            if (energy > 0) {
-                balance += 1;
-                energy -= 1;
-                if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+        document.getElementById('tap-coin').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (state.energy >= state.tapPower) {
+                state.balance += state.tapPower;
+                state.energy -= state.tapPower;
+                if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
                 updateUI();
                 syncData();
             }
         });
 
-        // 4. डेटा सिंक (Firebase)
+        function renderMine() {
+            const container = document.getElementById('cards-container');
+            container.innerHTML = '';
+            state.cards.forEach((c, i) => {
+                const cost = Math.floor(c.cost * Math.pow(1.5, c.lvl));
+                container.innerHTML += `
+                    <div class="premium-card ${state.balance < cost ? 'disabled' : ''}" onclick="buyCard(${i})">
+                        <div class="card-title">${c.name}</div>
+                        <div class="card-pph">+${c.pph} p/h</div>
+                        <div class="price-tag">💰 ${cost.toLocaleString()}</div>
+                        <div style="font-size:9px; margin-top:5px; color:var(--text-gray)">Lvl ${c.lvl}</div>
+                    </div>`;
+            });
+        }
+
+        function renderBoosts() {
+            const container = document.getElementById('boost-container');
+            container.innerHTML = '';
+            const b = [
+                { id: 'multitap', name: 'Multitap Engine', desc: '+1 per tap', cost: state.boosts.multitap.cost },
+                { id: 'energy', name: 'Battery Expansion', desc: '+500 Capacity', cost: state.boosts.energy.cost }
+            ];
+            b.forEach(boost => {
+                container.innerHTML += `
+                    <div class="premium-card ${state.balance < boost.cost ? 'disabled' : ''}" onclick="buyBoost('${boost.id}')" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <div><div class="card-title">${boost.name}</div><div style="font-size:10px; color:var(--text-gray)">${boost.desc}</div></div>
+                        <div class="price-tag">💰 ${boost.cost.toLocaleString()}</div>
+                    </div>`;
+            });
+        }
+
+        window.buyCard = function(i) {
+            const c = state.cards[i];
+            const cost = Math.floor(c.cost * Math.pow(1.5, c.lvl));
+            if(state.balance >= cost) {
+                state.balance -= cost; state.pph += c.pph; c.lvl++;
+                saveFull(); renderMine(); updateUI();
+            }
+        };
+
+        window.buyBoost = function(id) {
+            const b = state.boosts[id];
+            if(state.balance >= b.cost) {
+                state.balance -= b.cost;
+                if(id === 'multitap') state.tapPower++;
+                if(id === 'energy') state.maxEnergy += 500;
+                b.lvl++; b.cost *= 2;
+                saveFull(); renderBoosts(); updateUI();
+            }
+        };
+
         let syncTimer;
         function syncData() {
             clearTimeout(syncTimer);
-            syncTimer = setTimeout(async () => {
-                await fetch(`${DB_URL}${playerId}.json`, {
-                    method: 'PATCH',
-                    body: JSON.stringify({ balance: balance, lastSync: Date.now() })
-                });
-            }, 2000);
+            syncTimer = setTimeout(saveFull, 2000);
         }
 
-        // 5. कॉपी लिंक फिक्स
+        async function saveFull() {
+            await fetch(`${DB_URL}${playerId}.json`, {
+                method: 'PATCH',
+                body: JSON.stringify(state)
+            });
+        }
+
         window.copyRefLink = function() {
             const link = document.getElementById('ref-link').innerText;
-            const btn = document.getElementById('copy-btn');
-            
             if (tg.writeTextToClipboard) {
                 tg.writeTextToClipboard(link);
-                btn.innerText = "COPIED! ✅";
-                setTimeout(() => btn.innerText = "COPY LINK", 2000);
-            } else {
-                const el = document.createElement('textarea');
-                el.value = link;
-                document.body.appendChild(el);
-                el.select();
-                document.execCommand('copy');
-                document.body.removeChild(el);
-                btn.innerText = "COPIED! ✅";
-                setTimeout(() => btn.innerText = "COPY LINK", 2000);
+                alert("Copied! ✅");
             }
         };
 
@@ -165,6 +253,11 @@
             document.getElementById(pageId).classList.add('active');
             el.classList.add('active');
         };
+
+        setInterval(() => {
+            if(state.energy < state.maxEnergy) { state.energy = Math.min(state.maxEnergy, state.energy + 1); updateUI(); }
+            if(state.pph > 0) { state.balance += (state.pph / 3600); updateUI(); }
+        }, 1000);
 
         window.onload = loadData;
     </script>
