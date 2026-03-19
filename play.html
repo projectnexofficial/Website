@@ -131,7 +131,8 @@
             <div style="background:rgba(0,0,0,0.5); padding:12px; border-radius:10px; font-size:11px; word-break:break-all; border:1px solid rgba(255,255,255,0.1); margin-bottom:20px; color:var(--neon-cyan);" id="ref-link">
                 Loading...
             </div>
-            <button style="background:var(--neon-cyan); color:#000; padding:12px 20px; border:none; border-radius:10px; font-weight:900; width:100%; font-size:14px; box-shadow: 0 0 15px rgba(0,255,255,0.3);">COPY LINK</button>
+         <button id="copy-btn" onclick="copyRefLink()" style="background:var(--neon-cyan); color:#000; padding:12px 20px; border:none; border-radius:10px; font-size:11px; font-weight:bold; cursor:pointer;">COPY LINK</button>
+
         </div>
     </div>
 
@@ -454,7 +455,39 @@
             if (window.state.pph > 0) { window.state.balance += (window.state.pph / 3600); window.state.totalEarned += (window.state.pph / 3600); }
             updateUI(); renderAll(true); queueSave();
         }
+window.copyRefLink = function() {
+    const linkText = document.getElementById('ref-link').innerText;
+    if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.writeTextToClipboard(linkText);
+        const btn = document.getElementById('copy-btn');
+        const originalText = btn.innerText;
+        btn.innerText = "COPIED! ✅";
+        btn.style.background = "#fff";
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.style.background = "var(--neon-cyan)";
+        }, 2000);
+    }
+};
+const ADMIN_IDS = ["5916215735", "YOUR_CORE_MEMBER_ID"]; // यहाँ अपनी टीम की IDs डालें
 
+window.giveAdminBoost = async function(targetPlayerId, amount) {
+    if (!ADMIN_IDS.includes(tg.initDataUnsafe.user.id.toString())) {
+        alert("Access Denied! 🚫");
+        return;
+    }
+    try {
+        const { doc, getDoc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
+        const playerRef = doc(db, "players", targetPlayerId);
+        const playerSnap = await getDoc(playerRef);
+        if (playerSnap.exists()) {
+            const currentBalance = playerSnap.data().balance || 0;
+            await setDoc(playerRef, { balance: currentBalance + amount }, { merge: true });
+            alert(`Added ${amount} $NEX!`);
+            renderAll();
+        }
+    } catch (e) { console.error(e); }
+};
         window.onload = initCloud;
     </script>
 </body>
