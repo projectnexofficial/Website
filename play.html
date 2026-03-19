@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Project NEX | Master Edition</title>
+    <title>Project NEX | Play & Earn</title>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&display=swap" rel="stylesheet">
+    
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
     <style>
         :root { --neon-cyan: #00ffff; --neon-gold: #ffd700; --dark-bg: #050a0f; --text-gray: #888888; --glass-bg: rgba(13, 22, 31, 0.6); --accent-glow: rgba(0, 255, 255, 0.2); }
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Exo 2', sans-serif; background: var(--dark-bg); color: white; overflow: hidden; height: 100vh; user-select: none; }
         
-        /* Top Bar & Progress */
+        /* Premium Top Bar */
         .top-stats { display: flex; justify-content: space-between; padding: 15px 20px; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(10px); border-bottom: 1px solid var(--accent-glow); align-items: center;}
         .stat-box { text-align: center; width: 45%; }
-        .stat-label { font-size: 10px; color: var(--text-gray); text-transform: uppercase; }
+        .stat-label { font-size: 10px; color: var(--text-gray); text-transform: uppercase; letter-spacing: 1px;}
         .stat-value { font-size: 15px; color: var(--neon-cyan); font-weight: bold; }
+        
+        /* 🔥 Rank Progress Bar 🔥 */
         .rank-progress-bg { width: 100%; height: 4px; background: #222; border-radius: 2px; margin-top: 5px; overflow: hidden; }
         .rank-progress-fill { height: 100%; background: var(--neon-cyan); width: 0%; transition: width 0.3s ease; box-shadow: 0 0 5px var(--neon-cyan); }
 
@@ -24,32 +28,66 @@
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
         
         .balance-container { text-align: center; margin-top: 10px; }
-        .coin-balance { font-size: 48px; font-weight: 900; color: white; text-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
+        .player-greeting { font-size: 14px; color: var(--text-gray); margin-bottom: 5px; }
+        .coin-balance { font-size: 52px; font-weight: 900; color: white; text-shadow: 0 0 25px rgba(0, 255, 255, 0.5); }
+        .currency-name { font-size: 18px; color: var(--neon-cyan); }
         
-        /* Coin Area */
+        /* COIN & COMBO SYSTEM */
         .game-area { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 45vh; margin-top: 20px; position: relative;}
-        .coin-wrapper { position: relative; width: 300px; height: 300px; display: flex; justify-content: center; align-items: center; background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjdQ7_PUSk4I3ZLs2E1SAfBz5KVQpsuM_czD6_keQui1lhgig7-luZLi4CeCd1neWxLM8xMs3GXtANGX45S3t_40wgfSJ805kpgFcrrNBGhyphenhyphenOjab_5pXbdnCuwTlEMd47rQDiOR2rwnWk3cF1uDZOokZOiLLFGvCE0DxRA23uMRtuLxmzsRNoaCmijzvho/s1376/1000068547.png') no-repeat center center; background-size: contain; }
-        .main-coin { width: 190px; height: 190px; background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgleg2PGdSWOyTz8jmWPsJOShGD9hKIwJwp9yWM-2c3DY25FORtVUFZnvo_YON2RWkw2zRw5tItEAEDxLwDBZUtJWef1GgyNeenalHXXeNEXIpkuUR92GHgiGwGZyxbtp8h_T_0mGK88cNH8AsnVp_qxiE7RwAVb_oS4A7dtIXqMSb_cIX_16SB-lqJCng/s1462/1000068539.png') no-repeat center center; background-size: contain; border-radius: 50%; cursor: pointer; transition: transform 0.05s; }
-        .main-coin:active { transform: scale(0.92); }
+        
+        /* 🔥 Combo Multiplier Badge 🔥 */
+        #combo-badge { position: absolute; top: 0; right: 20px; background: rgba(255, 215, 0, 0.1); color: var(--neon-gold); border: 1px solid var(--neon-gold); padding: 5px 15px; border-radius: 20px; font-weight: 900; font-size: 14px; opacity: 0; transition: 0.3s; transform: scale(0.8); box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); z-index: 50;}
+        #combo-badge.active { opacity: 1; transform: scale(1); animation: pulseCombo 0.5s infinite alternate; }
+        @keyframes pulseCombo { from { transform: scale(1); } to { transform: scale(1.1); box-shadow: 0 0 25px rgba(255, 215, 0, 0.6); } }
 
-        /* Energy */
-        .energy-container { width: 85%; margin-top: 30px; }
-        .energy-bar-bg { width: 100%; height: 10px; background: #111; border-radius: 5px; overflow: hidden; border: 1px solid #333; }
-        .energy-bar-fill { height: 100%; background: var(--neon-cyan); width: 100%; transition: width 0.1s; }
+        .coin-wrapper { position: relative; width: 340px; height: 340px; display: flex; justify-content: center; align-items: center; background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjdQ7_PUSk4I3ZLs2E1SAfBz5KVQpsuM_czD6_keQui1lhgig7-luZLi4CeCd1neWxLM8xMs3GXtANGX45S3t_40wgfSJ805kpgFcrrNBGhyphenhyphenOjab_5pXbdnCuwTlEMd47rQDiOR2rwnWk3cF1uDZOokZOiLLFGvCE0DxRA23uMRtuLxmzsRNoaCmijzvho/s1376/1000068547.png') no-repeat center center; background-size: contain; }
+        .main-coin { width: 210px; height: 210px; background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgleg2PGdSWOyTz8jmWPsJOShGD9hKIwJwp9yWM-2c3DY25FORtVUFZnvo_YON2RWkw2zRw5tItEAEDxLwDBZUtJWef1GgyNeenalHXXeNEXIpkuUR92GHgiGwGZyxbtp8h_T_0mGK88cNH8AsnVp_qxiE7RwAVb_oS4A7dtIXqMSb_cIX_16SB-lqJCng/s1462/1000068539.png') no-repeat center center; background-size: contain; border-radius: 50%; box-shadow: 0 0 50px rgba(0, 255, 255, 0.1); cursor: pointer; transition: transform 0.05s; z-index: 10; }
+        .main-coin:active { transform: scale(0.92); box-shadow: 0 0 80px rgba(0, 255, 255, 0.5); }
 
-        /* Cards & Boosts */
-        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .premium-card { background: var(--glass-bg); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; text-align: left; }
-        .premium-card.disabled { opacity: 0.5; filter: grayscale(1); }
-        .card-title { font-size: 12px; font-weight: bold; color: white; margin-bottom: 5px; }
-        .card-pph { font-size: 10px; color: #00ff00; margin-bottom: 10px; }
-        .price-tag { color: var(--neon-cyan); font-weight: 900; font-size: 12px; }
-
-        /* Nav */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; padding-bottom: 10px; }
-        .nav-item { color: var(--text-gray); text-decoration: none; font-size: 10px; text-align: center; flex: 1; }
-        .nav-item.active { color: var(--neon-cyan); }
-        .nav-icon { display: block; font-size: 20px; margin-bottom: 2px; }
+        .tap-effect { position: absolute; color: white; font-weight: 900; font-size: 28px; text-shadow: 0 0 10px var(--neon-cyan); pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 100; }
+        .tap-effect.combo-hit { color: var(--neon-gold); text-shadow: 0 0 15px var(--neon-gold); font-size: 34px; }
+        @keyframes floatUp { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), -120px) scale(1.5); opacity: 0; } }
+        
+        .energy-container { width: 85%; margin-top: 40px; }
+        .energy-text { font-size: 14px; margin-bottom: 8px; font-weight: bold; }
+        .energy-bar-bg { width: 100%; height: 12px; background: rgba(0,0,0,0.5); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; }
+        .energy-bar-fill { height: 100%; background: linear-gradient(90deg, #004080, var(--neon-cyan)); transition: width 0.1s; box-shadow: 0 0 10px var(--neon-cyan); }
+        
+        .section-heading { font-size: 20px; color: var(--neon-cyan); margin-bottom: 15px; text-align: center; text-transform: uppercase; letter-spacing: 2px;}
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .list-container { display: flex; flex-direction: column; gap: 15px; }
+        
+        /* 💎 Glassmorphism Premium Cards 💎 */
+        .premium-card { background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid rgba(0, 255, 255, 0.1); border-radius: 16px; padding: 18px; transition: 0.3s; position: relative; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 15px rgba(0,0,0,0.3);}
+        .premium-card:active { transform: scale(0.97); border-color: var(--neon-cyan); }
+        .premium-card.disabled { opacity: 0.5; filter: grayscale(100%); pointer-events: none; }
+        .card-header { font-size: 14px; font-weight: 900; color: white; margin-bottom: 5px; }
+        .card-sub { font-size: 11px; color: var(--text-gray); margin-bottom: 12px; }
+        .card-sub span { color: #00ff00; font-weight: bold;}
+        .card-bottom { border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .price { color: var(--neon-cyan); font-weight: bold; font-size: 14px; }
+        .level { font-size: 10px; background: rgba(0,255,255,0.1); color: var(--neon-cyan); padding: 4px 8px; border-radius: 6px; font-weight: bold;}
+        
+        .task-card { display: flex; justify-content: space-between; align-items: center; flex-direction: row; }
+        .task-btn { background: rgba(0, 255, 255, 0.1); color: var(--neon-cyan); padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; text-align: center; min-width: 80px; border: 1px solid rgba(0, 255, 255, 0.3); transition: 0.2s;}
+        .task-card.completed .task-btn { background: rgba(255,255,255,0.05); color: var(--text-gray); border-color: transparent; pointer-events: none; }
+        
+        /* Sleek Nav */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 80px; background: rgba(2, 5, 8, 0.9); backdrop-filter: blur(15px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { text-align: center; color: var(--text-gray); text-decoration: none; font-size: 11px; flex: 1; transition: 0.3s; padding: 10px 0; font-weight: bold;}
+        .nav-item.active { color: var(--neon-cyan); transform: translateY(-5px); text-shadow: 0 0 10px var(--neon-cyan); }
+        .nav-icon { font-size: 24px; display: block; margin-bottom: 5px; }
+        
+        #sync-status { position: absolute; top: 15px; right: 20px; font-size: 10px; color: var(--text-gray); font-weight: bold; background: rgba(0,0,0,0.5); padding: 3px 8px; border-radius: 10px;}
+        .syncing { color: var(--neon-cyan) !important; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        
+        /* Modal Popup */
+        #offline-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
+        .modal-content { background: var(--glass-bg); border: 1px solid var(--neon-cyan); padding: 35px; border-radius: 20px; text-align: center; box-shadow: 0 0 40px rgba(0,255,255,0.15); width: 85%; backdrop-filter: blur(20px);}
+        .modal-title { font-size: 22px; color: white; margin-bottom: 10px; font-weight: 900;}
+        .modal-coins { font-size: 38px; font-weight: 900; color: var(--neon-cyan); margin-bottom: 25px; text-shadow: 0 0 15px rgba(0,255,255,0.4); }
+        .modal-btn { background: var(--neon-cyan); color: #000; border: none; padding: 14px 30px; font-size: 16px; font-weight: 900; border-radius: 12px; cursor: pointer; width: 100%; text-transform: uppercase; box-shadow: 0 0 15px rgba(0,255,255,0.4);}
     </style>
 </head>
 <body>
@@ -64,202 +102,407 @@
             <p class="stat-value">+<span id="pph-display">0</span></p>
         </div>
     </div>
+    <span id="sync-status">☁️ Sync</span>
 
     <div id="home-page" class="page active">
         <div class="balance-container">
-            <p style="font-size:12px; color:var(--text-gray);" id="player-greeting">Hello, CEO!</p>
-            <p class="coin-balance"><span id="coin-balance">0</span> <span style="font-size:16px; color:var(--neon-cyan)">$NEX</span></p>
+            <p class="player-greeting" id="player-greeting">Hello, CEO!</p>
+            <p class="coin-balance"><span id="coin-balance">0</span> <span class="currency-name">$NEX</span></p>
         </div>
         <div class="game-area">
-            <div class="coin-wrapper"><div class="main-coin" id="tap-coin"></div></div>
+            <div id="combo-badge">🔥 x2 COMBO</div>
+            <div class="coin-wrapper">
+                <div class="main-coin" id="tap-coin"></div>
+            </div>
             <div class="energy-container">
-                <p style="font-size:11px; margin-bottom:5px;">⚡ <span id="current-energy">1000</span> / <span id="max-energy">1000</span></p>
+                <p class="energy-text">⚡ <span id="current-energy">1000</span> / <span id="max-energy">1000</span></p>
                 <div class="energy-bar-bg"><div class="energy-bar-fill" id="energy-fill"></div></div>
             </div>
         </div>
     </div>
 
-    <div id="mine-page" class="page">
-        <h2 style="text-align:center; margin-bottom:20px; font-size:18px; color:var(--neon-cyan)">MINING NODES</h2>
-        <div class="grid-container" id="cards-container"></div>
-    </div>
-
-    <div id="boost-page" class="page">
-        <h2 style="text-align:center; margin-bottom:20px; font-size:18px; color:var(--neon-cyan)">UPGRADES</h2>
-        <div id="boost-container"></div>
-    </div>
-
+    <div id="mine-page" class="page"><h2 class="section-heading">Mining Setup</h2><div class="grid-container" id="cards-container"></div></div>
+    <div id="earn-page" class="page"><h2 class="section-heading">Social Quests</h2><div class="list-container" id="tasks-container"></div></div>
+    <div id="boost-page" class="page"><h2 class="section-heading">Upgrades</h2><div class="list-container" id="boost-container"></div></div>
     <div id="friends-page" class="page">
-        <h2 style="text-align:center; margin-bottom:20px; font-size:18px; color:var(--neon-cyan)">REFERRALS</h2>
-        <div class="premium-card" style="text-align:center;">
-            <p style="font-size:13px; margin-bottom:10px;">Earn 5,000 $NEX per friend!</p>
-            <div id="ref-link" style="background:#000; padding:10px; border-radius:8px; font-size:10px; color:var(--neon-cyan); margin-bottom:15px; word-break:break-all;">Loading...</div>
-            <button id="copy-btn" onclick="copyRefLink()" style="background:var(--neon-cyan); color:#000; padding:12px; border:none; border-radius:10px; font-weight:bold; width:100%;">COPY LINK</button>
+        <h2 class="section-heading">Referral Hub</h2>
+        <div class="premium-card" style="text-align:center; display:block;">
+            <p style="font-size:13px; color:var(--text-gray); margin-bottom:15px; font-weight:bold;">Share your link and earn 5,000 $NEX per invite!</p>
+            <div style="background:rgba(0,0,0,0.5); padding:12px; border-radius:10px; font-size:11px; word-break:break-all; border:1px solid rgba(255,255,255,0.1); margin-bottom:20px; color:var(--neon-cyan);" id="ref-link">
+                Loading...
+            </div>
+         <button id="copy-btn" onclick="copyRefLink()" style="background:var(--neon-cyan); color:#000; padding:12px 20px; border:none; border-radius:10px; font-size:11px; font-weight:bold; cursor:pointer;">COPY LINK</button>
+
         </div>
     </div>
 
     <nav class="bottom-nav">
         <a class="nav-item active" onclick="nav('home-page', this)"><span class="nav-icon">🏠</span>Home</a>
         <a class="nav-item" onclick="nav('mine-page', this)"><span class="nav-icon">⛏️</span>Mine</a>
+        <a class="nav-item" onclick="nav('earn-page', this)"><span class="nav-icon">💎</span>Earn</a>
         <a class="nav-item" onclick="nav('boost-page', this)"><span class="nav-icon">🚀</span>Boost</a>
         <a class="nav-item" onclick="nav('friends-page', this)"><span class="nav-icon">👥</span>Friends</a>
     </nav>
+    
+    <div id="offline-modal">
+        <div class="modal-content">
+            <p class="modal-title">Welcome back, CEO! 🚀<br><span style="font-size:13px;color:var(--text-gray); font-weight:normal;">Your Web3 nodes mined:</span></p>
+            <p class="modal-coins" id="offline-coins">0</p>
+            <button class="modal-btn" onclick="document.getElementById('offline-modal').style.display='none'">Collect Income</button>
+        </div>
+    </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // --- 🤖 TELEGRAM & SERVER API ---
         const tg = window.Telegram.WebApp;
-        tg.expand();
+        tg.expand(); 
+        tg.ready();
 
-        const DB_URL = "https://projectnexgame-default-rtdb.firebaseio.com/players/";
-        const playerId = tg.initDataUnsafe?.user?.id.toString() || "5916215735";
-        const playerName = tg.initDataUnsafe?.user?.first_name || "CEO";
+        const API_URL = "https://script.google.com/macros/s/AKfycbx3ZAUCFLg621EqKtqDQH4XiwT5dRyGJizazFLq6qtPqMfHcFD0PAuJfSqGNg815vH5/exec";
+        const CHANNEL_USERNAME = "@ProjectNexOfficial";
 
-        // Global State
-        let state = {
-            balance: 0, pph: 0, energy: 1000, maxEnergy: 1000, tapPower: 1,
-            cards: [
-                { id: 0, name: "Cloud Node", cost: 100, pph: 5, lvl: 0 },
-                { id: 1, name: "AI Trader", cost: 500, pph: 25, lvl: 0 },
-                { id: 2, name: "Web3 Server", cost: 2000, pph: 120, lvl: 0 },
-                { id: 3, name: "Quantum Node", cost: 10000, pph: 600, lvl: 0 }
-            ],
-            boosts: {
-                multitap: { lvl: 1, cost: 500 },
-                energy: { lvl: 1, cost: 500 }
-            }
-        };
+        let tgUser = tg.initDataUnsafe?.user;
+        let playerId = "";
+        let playerName = "CEO";
 
-        async function loadData() {
+        if (tgUser) {
+            playerId = tgUser.id.toString(); 
+            playerName = tgUser.first_name;  
             document.getElementById('player-greeting').innerText = `Hello, ${playerName}!`;
-            document.getElementById('ref-link').innerText = `https://t.me/ProjectNexOfficial_bot?start=${playerId}`;
-            
+        } else {
+            playerId = localStorage.getItem('nexPlayerId') || 'NEX_' + Math.random().toString(36).substr(2, 9).toUpperCase();
+            localStorage.setItem('nexPlayerId', playerId);
+        }
+
+        document.getElementById('ref-link').innerText = `https://t.me/ProjectNexOfficial_bot?start=${playerId}`;
+
+        // --- 🔥 FIREBASE SETUP ---
+        const firebaseConfig = {
+          apiKey:"AIzaSyCLSBLlrMaECXkR6Fjd0Jk3Y9q2tx0D1V4",
+          authDomain: "projectnexgame.firebaseapp.com",
+          projectId: "projectnexgame",
+          storageBucket: "projectnexgame.firebasestorage.app",
+          messagingSenderId: "249475215928",
+          appId: "1:249475215928:web:17cccbce002f02ae53accd"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 🔥 STATE MANAGEMENT 🔥
+        window.state = {
+            tgName: playerName, 
+            balance: 0, pph: 0, energy: 1000, maxEnergy: 1000, tapPower: 1, totalEarned: 0,
+            lastSync: Date.now(),
+            boosts: { multitap: { level: 1, baseCost: 500 }, energyLimit: { level: 1, baseCost: 500 }, recharge: { level: 1, baseCost: 1000 } },
+            cards: [
+                { id: 1, name: "Basic Cloud Node", cost: 100, pph: 5, lvl: 0 }, { id: 2, name: "Telegram Shill Army", cost: 500, pph: 25, lvl: 0 },
+                { id: 3, name: "Smart Contract Audit", cost: 1500, pph: 80, lvl: 0 }, { id: 4, name: "AI Trading Bot", cost: 5000, pph: 250, lvl: 0 },
+                { id: 5, name: "Web3 Partnership", cost: 12000, pph: 650, lvl: 0 }, { id: 6, name: "Quantum Server", cost: 50000, pph: 3000, lvl: 0 }
+            ],
+            tasks: [
+                { id: 'yt', title: "Subscribe YouTube", reward: 10000, done: false, link: "https://youtube.com/@Project-Nex-Official" },
+                { id: 'tg', title: "Join Telegram", reward: 5000, done: false, link: "https://t.me/ProjectNexOfficial" }
+            ]
+        };
+
+        const ranks = [{n:"Beginner", t:0}, {n:"Amateur", t:50000}, {n:"Pro", t:250000}, {n:"Legend", t:1000000}, {n:"Mythic", t:5000000}];
+        const syncStatus = document.getElementById('sync-status');
+        let saveTimeout;
+        
+        // ⚡ COMBO METER LOGIC ⚡
+        let comboCount = 0;
+        let lastTapTime = 0;
+        let comboActive = false;
+        let comboTimer;
+
+        async function initCloud() {
             try {
-                const res = await fetch(`${DB_URL}${playerId}.json`);
-                const data = await res.json();
-                if (data) {
-                    state.balance = data.balance || 0;
-                    state.pph = data.pph || 0;
-                    state.cards = data.cards || state.cards;
-                    state.boosts = data.boosts || state.boosts;
-                    state.maxEnergy = data.maxEnergy || 1000;
-                    state.tapPower = data.tapPower || 1;
-                }
-                updateUI();
-                renderMine();
-                renderBoosts();
-            } catch (e) { console.error(e); }
+                const docSnap = await getDoc(doc(db, "players", playerId));
+                if (docSnap.exists()) { 
+                    const data = docSnap.data();
+                    window.state = { ...window.state, ...data }; 
+                    window.state.tgName = playerName; 
+                    
+                    if (window.state.lastSync && window.state.pph > 0) {
+                        const diffSeconds = (Date.now() - window.state.lastSync) / 1000;
+                        const offlineSeconds = Math.min(diffSeconds, 10800); 
+                        
+                        if (offlineSeconds > 60) { 
+                            const earned = (window.state.pph / 3600) * offlineSeconds;
+                            window.state.balance += earned;
+                            window.state.totalEarned += earned;
+                            
+                            document.getElementById('offline-coins').innerText = `+${Math.floor(earned).toLocaleString()}`;
+                            document.getElementById('offline-modal').style.display = 'flex';
+                            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                        }
+                        
+                        const refill = window.state.boosts.recharge.level * offlineSeconds;
+                        window.state.energy = Math.min(window.state.maxEnergy, window.state.energy + refill);
+                    }
+                } 
+                saveToCloud();
+            } catch(e) { console.error("Cloud Error:", e); }
+            renderAll(); setInterval(gameTick, 1000);
         }
 
-        function updateUI() {
-            document.getElementById('coin-balance').innerText = Math.floor(state.balance).toLocaleString();
-            document.getElementById('pph-display').innerText = state.pph.toLocaleString();
-            document.getElementById('current-energy').innerText = Math.floor(state.energy);
-            document.getElementById('max-energy').innerText = state.maxEnergy;
-            document.getElementById('energy-fill').style.width = `${(state.energy / state.maxEnergy) * 100}%`;
-            
-            // Rank Logic
-            let rank = "Beginner"; let fill = 0;
-            if(state.balance > 1000000) rank = "Legend";
-            else if(state.balance > 100000) rank = "Pro";
-            else if(state.balance > 10000) rank = "Amateur";
-            document.getElementById('user-rank').innerText = rank;
+        async function saveToCloud() {
+            syncStatus.innerText = "☁️..."; syncStatus.classList.add('syncing');
+            window.state.lastSync = Date.now(); 
+            try {
+                await setDoc(doc(db, "players", playerId), window.state);
+                syncStatus.innerText = "✓ Saved"; syncStatus.classList.remove('syncing');
+            } catch(e) { syncStatus.innerText = "⚠️ Err"; syncStatus.classList.remove('syncing'); }
         }
 
-        document.getElementById('tap-coin').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if (state.energy >= state.tapPower) {
-                state.balance += state.tapPower;
-                state.energy -= state.tapPower;
-                if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-                updateUI();
-                syncData();
-            }
-        });
-
-        function renderMine() {
-            const container = document.getElementById('cards-container');
-            container.innerHTML = '';
-            state.cards.forEach((c, i) => {
-                const cost = Math.floor(c.cost * Math.pow(1.5, c.lvl));
-                container.innerHTML += `
-                    <div class="premium-card ${state.balance < cost ? 'disabled' : ''}" onclick="buyCard(${i})">
-                        <div class="card-title">${c.name}</div>
-                        <div class="card-pph">+${c.pph} p/h</div>
-                        <div class="price-tag">💰 ${cost.toLocaleString()}</div>
-                        <div style="font-size:9px; margin-top:5px; color:var(--text-gray)">Lvl ${c.lvl}</div>
-                    </div>`;
-            });
-        }
-
-        function renderBoosts() {
-            const container = document.getElementById('boost-container');
-            container.innerHTML = '';
-            const b = [
-                { id: 'multitap', name: 'Multitap Engine', desc: '+1 per tap', cost: state.boosts.multitap.cost },
-                { id: 'energy', name: 'Battery Expansion', desc: '+500 Capacity', cost: state.boosts.energy.cost }
-            ];
-            b.forEach(boost => {
-                container.innerHTML += `
-                    <div class="premium-card ${state.balance < boost.cost ? 'disabled' : ''}" onclick="buyBoost('${boost.id}')" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <div><div class="card-title">${boost.name}</div><div style="font-size:10px; color:var(--text-gray)">${boost.desc}</div></div>
-                        <div class="price-tag">💰 ${boost.cost.toLocaleString()}</div>
-                    </div>`;
-            });
-        }
-
-        window.buyCard = function(i) {
-            const c = state.cards[i];
-            const cost = Math.floor(c.cost * Math.pow(1.5, c.lvl));
-            if(state.balance >= cost) {
-                state.balance -= cost; state.pph += c.pph; c.lvl++;
-                saveFull(); renderMine(); updateUI();
-            }
-        };
-
-        window.buyBoost = function(id) {
-            const b = state.boosts[id];
-            if(state.balance >= b.cost) {
-                state.balance -= b.cost;
-                if(id === 'multitap') state.tapPower++;
-                if(id === 'energy') state.maxEnergy += 500;
-                b.lvl++; b.cost *= 2;
-                saveFull(); renderBoosts(); updateUI();
-            }
-        };
-
-        let syncTimer;
-        function syncData() {
-            clearTimeout(syncTimer);
-            syncTimer = setTimeout(saveFull, 2000);
-        }
-
-        async function saveFull() {
-            await fetch(`${DB_URL}${playerId}.json`, {
-                method: 'PATCH',
-                body: JSON.stringify(state)
-            });
-        }
-
-        window.copyRefLink = function() {
-            const link = document.getElementById('ref-link').innerText;
-            if (tg.writeTextToClipboard) {
-                tg.writeTextToClipboard(link);
-                alert("Copied! ✅");
-            }
-        };
+        function queueSave() { clearTimeout(saveTimeout); saveTimeout = setTimeout(saveToCloud, 3000); }
 
         window.nav = function(pageId, el) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-            el.classList.add('active');
+            document.getElementById(pageId).classList.add('active'); el.classList.add('active');
+            if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
+        }
+
+        function updateUI() {
+            document.getElementById('coin-balance').innerText = Math.floor(window.state.balance).toLocaleString();
+            document.getElementById('pph-display').innerText = window.state.pph.toLocaleString();
+            
+            // PROGRESS BAR LOGIC
+            let currentRank = ranks[0].n;
+            let nextRankTarget = ranks[1].t;
+            let prevRankTarget = 0;
+            
+            for (let i = 0; i < ranks.length; i++) {
+                if (window.state.totalEarned >= ranks[i].t) {
+                    currentRank = ranks[i].n;
+                    prevRankTarget = ranks[i].t;
+                    nextRankTarget = ranks[i+1] ? ranks[i+1].t : ranks[i].t * 2; // Cap handling
+                }
+            }
+            
+            document.getElementById('user-rank').innerText = currentRank;
+            const progressPercent = Math.min(100, ((window.state.totalEarned - prevRankTarget) / (nextRankTarget - prevRankTarget)) * 100);
+            document.getElementById('rank-fill').style.width = `${progressPercent}%`;
+            
+            document.getElementById('current-energy').innerText = Math.floor(window.state.energy);
+            document.getElementById('max-energy').innerText = window.state.maxEnergy;
+            document.getElementById('energy-fill').style.width = `${(window.state.energy / window.state.maxEnergy) * 100}%`;
+        }
+
+        document.getElementById('tap-coin').addEventListener('touchstart', (e) => { e.preventDefault(); Array.from(e.changedTouches).forEach(t => handleTap(t.clientX, t.clientY)); });
+        document.getElementById('tap-coin').addEventListener('mousedown', (e) => { handleTap(e.clientX, e.clientY); });
+
+        function handleTap(x, y) {
+            if (window.state.energy >= window.state.tapPower) {
+                
+                // COMBO SYSTEM CALCULATION
+                const now = Date.now();
+                if (now - lastTapTime < 600) { comboCount++; } else { comboCount = 1; comboActive = false; document.getElementById('combo-badge').classList.remove('active'); }
+                lastTapTime = now;
+                
+                clearTimeout(comboTimer);
+                comboTimer = setTimeout(() => { comboCount = 0; comboActive = false; document.getElementById('combo-badge').classList.remove('active'); }, 1000);
+
+                let currentMultiplier = 1;
+                if (comboCount > 15) { 
+                    comboActive = true; 
+                    currentMultiplier = 2; 
+                    document.getElementById('combo-badge').classList.add('active'); 
+                }
+                
+                const coinsToGive = window.state.tapPower * currentMultiplier;
+                window.state.balance += coinsToGive; 
+                window.state.totalEarned += coinsToGive; 
+                window.state.energy -= window.state.tapPower; // Energy drains normal, but reward is 2x!
+                
+                // PURE HAPTIC FEEDBACK (NO AUDIO)
+                if (tg.HapticFeedback) {
+                    if (comboActive) tg.HapticFeedback.impactOccurred('heavy');
+                    else tg.HapticFeedback.impactOccurred('light'); 
+                }
+                
+                const float = document.createElement('div'); 
+                float.className = `tap-effect ${comboActive ? 'combo-hit' : ''}`; 
+                float.innerText = `+${coinsToGive}`;
+                const randomX = (Math.random() - 0.5) * 60; 
+                float.style.setProperty('--tx', `${randomX}px`);
+                float.style.left = `${x - 20}px`; float.style.top = `${y - 40}px`; document.body.appendChild(float);
+                setTimeout(() => float.remove(), 800);
+                
+                updateUI(); renderAll(true); queueSave();
+            }
+        }
+
+        window.renderAll = function(onlyDynamic = false) {
+            updateUI();
+            const cCont = document.getElementById('cards-container'); if(!onlyDynamic) cCont.innerHTML = '';
+            window.state.cards.forEach((c, i) => {
+                const cost = Math.floor(c.cost * Math.pow(1.5, c.lvl)); const nextPph = Math.floor(c.pph * (c.lvl + 1));
+                if(onlyDynamic) { const el = document.getElementById(`card-${i}`); if(el) el.className = `premium-card ${window.state.balance < cost ? 'disabled' : ''}`; return; }
+                cCont.innerHTML += `<div id="card-${i}" class="premium-card ${window.state.balance < cost ? 'disabled' : ''}" onclick="buyCard(${i})">
+                    <div><div class="card-header">${c.name}</div><div class="card-sub">Profit/hr: <span>+${nextPph}</span></div></div>
+                    <div class="card-bottom"><span class="price">💰 ${cost.toLocaleString()}</span><span class="level">lvl ${c.lvl}</span></div></div>`;
+            });
+            
+            if(!onlyDynamic) {
+                const tCont = document.getElementById('tasks-container'); tCont.innerHTML = '';
+                window.state.tasks.forEach((t, i) => {
+                    tCont.innerHTML += `<div class="premium-card task-card ${t.done ? 'completed' : ''}" onclick="doTask(${i})">
+                        <div><div class="card-header">${t.title}</div><div class="card-sub" style="margin:0;"><span>+${t.reward.toLocaleString()} $NEX</span></div></div>
+                        <span class="task-btn" id="task-btn-${i}">${t.done ? 'Done' : 'Start'}</span></div>`;
+                });
+            }
+            
+            const bCont = document.getElementById('boost-container'); if(!onlyDynamic) bCont.innerHTML = '';
+            const boostsData = [ {id:'multitap', n:'Multitap Engine', d:`+${window.state.boosts.multitap.level} per tap`}, {id:'energyLimit', n:'Battery Expansion', d:'+500 Max Energy'}, {id:'recharge', n:'Fast Charger', d:'Faster refill'} ];
+            boostsData.forEach((b, i) => {
+                const data = window.state.boosts[b.id]; const cost = Math.floor(data.baseCost * Math.pow(2, data.level - 1));
+                if(onlyDynamic) { const el = document.getElementById(`boost-${i}`); if(el) el.className = `premium-card task-card ${window.state.balance < cost ? 'disabled' : ''}`; return; }
+                bCont.innerHTML += `<div id="boost-${i}" class="premium-card task-card ${window.state.balance < cost ? 'disabled' : ''}" onclick="buyBoost('${b.id}')">
+                    <div><div class="card-header">${b.n}</div><div class="card-sub" style="margin:0; color:var(--text-gray)">${b.d}</div></div>
+                    <div style="text-align:right;"><span class="price">💰 ${cost.toLocaleString()}</span><br><span class="level">lvl ${data.level}</span></div></div>`;
+            });
+        }
+
+        window.buyCard = function(index) {
+            const c = window.state.cards[index]; const cost = Math.floor(c.cost * Math.pow(1.5, c.lvl));
+            if(window.state.balance >= cost) { 
+                window.state.balance -= cost; window.state.pph += c.pph; c.lvl++; 
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                saveToCloud(); renderAll(); 
+            }
+        }
+        window.buyBoost = function(id) {
+            const b = window.state.boosts[id]; const cost = Math.floor(b.baseCost * Math.pow(2, b.level - 1));
+            if(window.state.balance >= cost) { 
+                window.state.balance -= cost; b.level++; 
+                if(id === 'multitap') window.state.tapPower++; if(id === 'energyLimit') window.state.maxEnergy += 500; 
+                if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                saveToCloud(); renderAll(); 
+            }
+        }
+        
+        // 🚀 SECURE TASK VERIFICATION LOGIC 🚀
+        window.doTask = async function(index) {
+            const t = window.state.tasks[index];
+            if(t.done) return;
+
+            const btn = document.getElementById(`task-btn-${index}`);
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            
+            if (t.id === 'tg') {
+                window.open(t.link, '_blank'); 
+                
+                if (!tgUser) { alert("Real verification only works inside the Telegram app!"); return; }
+
+                btn.innerText = "Checking..."; btn.style.opacity = "0.5";
+
+                try {
+                    const checkUrl = `${API_URL}?userId=${playerId}&channel=${CHANNEL_USERNAME}`;
+                    const res = await fetch(checkUrl, { method: 'GET', redirect: 'follow' });
+                    const text = await res.text();
+                    
+                    try {
+                        const data = JSON.parse(text);
+                        if (data.success && data.joined) {
+                            window.state.balance += t.reward; t.done = true;
+                            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                            saveToCloud(); renderAll();
+                            alert("Verification Successful! Reward added. 🚀");
+                        } else {
+                            btn.innerText = "Start"; btn.style.opacity = "1";
+                            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+                            alert("Verification Failed: You haven't joined yet! ❌");
+                        }
+                    } catch (parseErr) {
+                        btn.innerText = "Start"; btn.style.opacity = "1";
+                        alert("API Error: Google is blocking access.");
+                    }
+                } catch (e) {
+                    btn.innerText = "Start"; btn.style.opacity = "1";
+                    alert("Network Error: Telegram Browser is blocking the check.");
+                }
+
+            } else if (t.id === 'yt') {
+                window.open(t.link, '_blank');
+                btn.style.pointerEvents = "none";
+                
+                let timeLeft = 10;
+                btn.innerText = `${timeLeft}s`;
+                
+                const timerId = setInterval(() => {
+                    timeLeft--;
+                    btn.innerText = `${timeLeft}s`;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(timerId);
+                        window.state.balance += t.reward; t.done = true;
+                        if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                        saveToCloud(); renderAll();
+                    }
+                }, 1000);
+            }
+        }
+
+        function gameTick() {
+            const refill = window.state.boosts.recharge.level;
+            if (window.state.energy < window.state.maxEnergy) { window.state.energy = Math.min(window.state.maxEnergy, window.state.energy + refill); }
+            if (window.state.pph > 0) { window.state.balance += (window.state.pph / 3600); window.state.totalEarned += (window.state.pph / 3600); }
+            updateUI(); renderAll(true); queueSave();
+        }
+
+        // 🚀 SUPER-FIXED COPY LINK FUNCTION 🚀
+        window.copyRefLink = function() {
+            const linkText = document.getElementById('ref-link').innerText;
+            try {
+                if (tg && tg.writeTextToClipboard) {
+                    tg.writeTextToClipboard(linkText);
+                } else {
+                    const el = document.createElement('textarea');
+                    el.value = linkText;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                }
+                const btn = document.getElementById('copy-btn');
+                const originalText = "COPY LINK";
+                btn.innerText = "COPIED! ✅";
+                btn.style.background = "#fff";
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.background = "var(--neon-cyan)";
+                }, 2000);
+            } catch (e) {
+                alert("Failed to copy. Please long press the link text.");
+            }
         };
 
-        setInterval(() => {
-            if(state.energy < state.maxEnergy) { state.energy = Math.min(state.maxEnergy, state.energy + 1); updateUI(); }
-            if(state.pph > 0) { state.balance += (state.pph / 3600); updateUI(); }
-        }, 1000);
+        const ADMIN_IDS = ["5916215735", "YOUR_CORE_MEMBER_ID"]; // यहाँ अपनी टीम की IDs डालें
 
-        window.onload = loadData;
+        window.giveAdminBoost = async function(targetPlayerId, amount) {
+            if (!ADMIN_IDS.includes(tg.initDataUnsafe.user.id.toString())) {
+                alert("Access Denied! 🚫");
+                return;
+            }
+            try {
+                const playerRef = doc(db, "players", targetPlayerId);
+                const playerSnap = await getDoc(playerRef);
+                if (playerSnap.exists()) {
+                    const currentBalance = playerSnap.data().balance || 0;
+                    await setDoc(playerRef, { balance: currentBalance + amount }, { merge: true });
+                    alert(`Added ${amount} $NEX!`);
+                    renderAll();
+                }
+            } catch (e) { console.error(e); }
+        };
+        
+        window.onload = initCloud;
     </script>
 </body>
 </html>
