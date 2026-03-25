@@ -236,7 +236,7 @@
                             window.state.balance += earned;
                             window.state.totalEarned += earned;
                             
-                            document.getElementById('offline-coins').innerText = `+${Math.floor(earned).toLocaleString()}`;
+                            document.getElementById('offline-coins').innerText = `+${formatNumber(earned)}`;
                             document.getElementById('offline-modal').style.display = 'flex';
                             if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
                         }
@@ -267,11 +267,19 @@
             document.getElementById(pageId).classList.add('active'); el.classList.add('active');
             if (tg.HapticFeedback) tg.HapticFeedback.selectionChanged();
         }
+// FORMAT NUMBER TO K, M, B, T
+function formatNumber(num) {
+    if (num >= 1e12) return (num / 1e12).toFixed(2).replace(/\.00$/, '') + 'T'; // Trillion
+    if (num >= 1e9) return (num / 1e9).toFixed(2).replace(/\.00$/, '') + 'B';   // Billion
+    if (num >= 1e6) return (num / 1e6).toFixed(2).replace(/\.00$/, '') + 'M';   // Million
+    if (num >= 1e3) return (num / 1e3).toFixed(2).replace(/\.00$/, '') + 'K';   // Thousand
+    return Math.floor(num).toString();
+}
 
         function updateUI() {
-            document.getElementById('coin-balance').innerText = Math.floor(window.state.balance).toLocaleString();
-            document.getElementById('pph-display').innerText = window.state.pph.toLocaleString();
-            
+            document.getElementById('coin-balance').innerText = formatNumber(window.state.balance);
+document.getElementById('pph-display').innerText = formatNumber(window.state.pph);
+
             // PROGRESS BAR LOGIC
             let currentRank = ranks[0].n;
             let nextRankTarget = ranks[1].t;
@@ -346,7 +354,7 @@
                 if(onlyDynamic) { const el = document.getElementById(`card-${i}`); if(el) el.className = `premium-card ${window.state.balance < cost ? 'disabled' : ''}`; return; }
                 cCont.innerHTML += `<div id="card-${i}" class="premium-card ${window.state.balance < cost ? 'disabled' : ''}" onclick="buyCard(${i})">
                     <div><div class="card-header">${c.name}</div><div class="card-sub">Profit/hr: <span>+${nextPph}</span></div></div>
-                    <div class="card-bottom"><span class="price">💰 ${cost.toLocaleString()}</span><span class="level">lvl ${c.lvl}</span></div></div>`;
+                    <div class="card-bottom"><span class="price">💰 ${formatNumber(cost)}</span><span class="level">lvl ${c.lvl}</span></div></div>`;
             });
             
             if(!onlyDynamic) {
